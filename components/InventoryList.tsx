@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { Item, Location } from '../types';
-import { SearchIcon, PlusIcon, ChevronDownIcon, EditIcon, TrashIcon, EyeIcon, QrcodeIcon } from './icons';
+import { Search, Plus, ChevronDown, Edit, Trash2, Eye, QrCode } from 'lucide-react';
 import QRCodeGenerator from './QRCodeGenerator';
 
 interface InventoryListProps {
@@ -43,7 +43,7 @@ const InventoryList: React.FC<InventoryListProps> = ({ items, locations, onView,
       <div className="flex flex-col md:flex-row justify-between items-center mb-4 gap-4">
         <h1 className="text-2xl font-bold">Inventory Items</h1>
         <button onClick={onAddNew} className="w-full md:w-auto flex items-center justify-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700">
-          <PlusIcon />
+          <Plus className="h-5 w-5" />
           Add New Item
         </button>
       </div>
@@ -58,7 +58,7 @@ const InventoryList: React.FC<InventoryListProps> = ({ items, locations, onView,
             className="w-full pl-10 pr-4 py-2 border dark:border-gray-600 rounded-md bg-white dark:bg-gray-700"
           />
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <SearchIcon />
+            <Search className="h-5 w-5 text-gray-400" />
           </div>
         </div>
         <select value={filterCategory} onChange={(e) => setFilterCategory(e.target.value)} className="w-full p-2 border dark:border-gray-600 rounded-md bg-white dark:bg-gray-700">
@@ -102,11 +102,11 @@ const InventoryList: React.FC<InventoryListProps> = ({ items, locations, onView,
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">{item.quantity}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
                   <div className="flex justify-center items-center gap-2">
-                    <button onClick={() => onView(item.id)} className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-200" title="View"><EyeIcon /></button>
-                    <button onClick={() => onEdit(item)} className="text-yellow-600 hover:text-yellow-900 dark:text-yellow-400 dark:hover:text-yellow-200" title="Edit"><EditIcon /></button>
+                    <button onClick={() => onView(item.id)} className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-200" title="View"><Eye className="h-5 w-5" /></button>
+                    <button onClick={() => onEdit(item)} className="text-yellow-600 hover:text-yellow-900 dark:text-yellow-400 dark:hover:text-yellow-200" title="Edit"><Edit className="h-5 w-5" /></button>
                     {/* FIX: Changed handleDelete to onDelete to match the component's props. */}
-                    <button onClick={() => onDelete(item.id)} className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-200" title="Delete"><TrashIcon /></button>
-                    <button onClick={() => handlePrintQR(item)} className="text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200" title="Print QR"><QrcodeIcon /></button>
+                    <button onClick={() => onDelete(item.id)} className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-200" title="Delete"><Trash2 className="h-5 w-5" /></button>
+                    <button onClick={() => handlePrintQR(item)} className="text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200" title="Print QR"><QrCode className="h-5 w-5" /></button>
                   </div>
                 </td>
               </tr>

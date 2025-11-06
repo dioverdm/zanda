@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Item, Location, Transaction, TransactionType } from '../types';
-import { EditIcon, TrashIcon, QrcodeIcon, PlusIcon, MinusIcon, WrenchIcon } from './icons';
+import { Edit, Trash2, QrCode, Plus, Minus, Wrench } from 'lucide-react';
 import QRCodeGenerator from './QRCodeGenerator';
 
 interface ItemDetailProps {
@@ -19,11 +19,11 @@ const ItemDetail: React.FC<ItemDetailProps> = ({ item, locations, transactions, 
   const getTransactionIcon = (type: TransactionType) => {
     switch (type) {
       case TransactionType.INBOUND:
-        return <div className="bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-300 p-2 rounded-full"><PlusIcon /></div>;
+        return <div className="bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-300 p-2 rounded-full"><Plus className="h-5 w-5" /></div>;
       case TransactionType.OUTBOUND:
-        return <div className="bg-red-100 dark:bg-red-900 text-red-600 dark:text-red-300 p-2 rounded-full"><MinusIcon /></div>;
+        return <div className="bg-red-100 dark:bg-red-900 text-red-600 dark:text-red-300 p-2 rounded-full"><Minus className="h-5 w-5" /></div>;
       case TransactionType.ADJUSTMENT:
-        return <div className="bg-yellow-100 dark:bg-yellow-900 text-yellow-600 dark:text-yellow-300 p-2 rounded-full"><WrenchIcon /></div>;
+        return <div className="bg-yellow-100 dark:bg-yellow-900 text-yellow-600 dark:text-yellow-300 p-2 rounded-full"><Wrench className="h-5 w-5" /></div>;
     }
   };
 
@@ -44,9 +44,9 @@ const ItemDetail: React.FC<ItemDetailProps> = ({ item, locations, transactions, 
                 <p className="text-sm text-gray-500 dark:text-gray-400">SKU: {item.sku}</p>
               </div>
               <div className="flex gap-2">
-                <button onClick={() => onEdit(item)} className="p-2 bg-yellow-500 text-white rounded-md hover:bg-yellow-600"><EditIcon /></button>
-                <button onClick={() => onDelete(item.id)} className="p-2 bg-red-500 text-white rounded-md hover:bg-red-600"><TrashIcon /></button>
-                <button onClick={() => setShowQRModal(true)} className="p-2 bg-gray-500 text-white rounded-md hover:bg-gray-600"><QrcodeIcon /></button>
+                <button onClick={() => onEdit(item)} className="p-2 bg-yellow-500 text-white rounded-md hover:bg-yellow-600"><Edit className="h-5 w-5" /></button>
+                <button onClick={() => onDelete(item.id)} className="p-2 bg-red-500 text-white rounded-md hover:bg-red-600"><Trash2 className="h-5 w-5" /></button>
+                <button onClick={() => setShowQRModal(true)} className="p-2 bg-gray-500 text-white rounded-md hover:bg-gray-600"><QrCode className="h-5 w-5" /></button>
               </div>
             </div>
             <p className="mt-4 text-gray-600 dark:text-gray-300">{item.description}</p>

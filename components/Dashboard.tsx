@@ -1,7 +1,7 @@
 
 import React, { useMemo } from 'react';
 import { Item, Transaction, Page, TransactionType } from '../types';
-import { ScanIcon, PlusCircleIcon, BarChartIcon, AlertTriangleIcon, CubeIcon } from './icons';
+import { QrCode, Plus, List, BarChart3, AlertTriangle, Package, Archive } from 'lucide-react';
 
 // Make sure Recharts is available in the global scope from the CDN
 declare const Recharts: any;
@@ -29,11 +29,17 @@ const Dashboard: React.FC<DashboardProps> = ({ items, transactions, onNavigate }
         return d.toISOString().split('T')[0];
     }).reverse();
 
+    // Filter transactions from last 7 days
+    const last7DaysTransactions = transactions.filter(t => {
+      const transactionDate = t.timestamp.split('T')[0];
+      return last7Days.includes(transactionDate);
+    });
+
     const data = last7Days.map(date => {
-        const dailyInbound = transactions
+        const dailyInbound = last7DaysTransactions
             .filter(t => t.timestamp.startsWith(date) && t.type === TransactionType.INBOUND)
             .reduce((sum, t) => sum + t.quantityChange, 0);
-        const dailyOutbound = transactions
+        const dailyOutbound = last7DaysTransactions
             .filter(t => t.timestamp.startsWith(date) && t.type === TransactionType.OUTBOUND)
             .reduce((sum, t) => sum + Math.abs(t.quantityChange), 0);
         return {
@@ -70,51 +76,56 @@ const Dashboard: React.FC<DashboardProps> = ({ items, transactions, onNavigate }
       <h1 className="text-3xl font-bold">Dashboard</h1>
       
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        <StatCard icon={<CubeIcon />} title="Total Item SKUs" value={totalItems} color="bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300" />
-        <StatCard icon={<ArchiveIcon />} title="Total Stock Quantity" value={totalStock} color="bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-300" />
-        <StatCard icon={<AlertTriangleIcon />} title="Low Stock Items" value={lowStockItems} color="bg-red-100 dark:bg-red-900 text-red-600 dark:text-red-300" />
+        <StatCard icon={<Package className="h-6 w-6" />} title="Total Item SKUs" value={totalItems} color="bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300" />
+        <StatCard icon={<Archive className="h-6 w-6" />} title="Total Stock Quantity" value={totalStock} color="bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-300" />
+        <StatCard icon={<AlertTriangle className="h-6 w-6" />} title="Low Stock Items" value={lowStockItems} color="bg-red-100 dark:bg-red-900 text-red-600 dark:text-red-300" />
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-        <ActionButton icon={<ScanIcon />} label="Scan Item" onClick={() => onNavigate(Page.SCANNER)} />
-        <ActionButton icon={<PlusCircleIcon />} label="Add New Item" onClick={() => onNavigate(Page.ITEM_FORM)} />
-        <ActionButton icon={<ListIcon />} label="View Inventory" onClick={() => onNavigate(Page.INVENTORY)} />
-        <ActionButton icon={<BarChartIcon />} label="View Reports" onClick={() => onNavigate(Page.REPORTS)} />
+        <ActionButton icon={<QrCode className="h-8 w-8" />} label="Scan Item" onClick={() => onNavigate(Page.SCANNER)} />
+        <ActionButton icon={<Plus className="h-8 w-8" />} label="Add New Item" onClick={() => onNavigate(Page.ITEM_FORM)} />
+        <ActionButton icon={<List className="h-8 w-8" />} label="View Inventory" onClick={() => onNavigate(Page.INVENTORY)} />
+        <ActionButton icon={<BarChart3 className="h-8 w-8" />} label="View Reports" onClick={() => onNavigate(Page.REPORTS)} />
       </div>
       
       <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
         <h2 className="text-xl font-semibold mb-4">Recent Stock Movements (Last 7 Days)</h2>
-        <div style={{ width: '100%', height: 300 }}>
-          {ResponsiveContainer && BarChart ? (
-            <ResponsiveContainer>
-              <BarChart data={recentTransactions}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(128, 128, 128, 0.3)" />
-                <XAxis dataKey="date" />
-                <YAxis />
-                <Tooltip
-                  contentStyle={{ 
-                    backgroundColor: 'rgba(31, 41, 55, 0.8)', // bg-gray-800 with opacity
-                    borderColor: 'rgba(75, 85, 99, 1)' // border-gray-600
-                  }}
-                />
-                <Legend />
-                <Bar dataKey="Inbound" fill="#4ade80" />
-                <Bar dataKey="Outbound" fill="#f87171" />
-              </BarChart>
-            </ResponsiveContainer>
-          ) : (
-            <div className="flex items-center justify-center h-full text-gray-500">
-              Loading Chart...
+        {transactions.length === 0 ? (
+          <div className="flex items-center justify-center h-64 text-gray-500 dark:text-gray-400">
+            <div className="text-center">
+              <p className="text-lg">No transactions yet</p>
+              <p className="text-sm">Transactions will appear here from /report data</p>
             </div>
-          )}
-        </div>
+          </div>
+        ) : (
+          <div style={{ width: '100%', height: 300 }}>
+            {ResponsiveContainer && BarChart ? (
+              <ResponsiveContainer>
+                <BarChart data={recentTransactions}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(128, 128, 128, 0.3)" />
+                  <XAxis dataKey="date" />
+                  <YAxis />
+                  <Tooltip
+                    contentStyle={{ 
+                      backgroundColor: 'rgba(31, 41, 55, 0.8)', // bg-gray-800 with opacity
+                      borderColor: 'rgba(75, 85, 99, 1)' // border-gray-600
+                    }}
+                  />
+                  <Legend />
+                  <Bar dataKey="Inbound" fill="#4ade80" />
+                  <Bar dataKey="Outbound" fill="#f87171" />
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="flex items-center justify-center h-full text-gray-500">
+                Loading Chart...
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
 };
-
-// Icons not available in the central icons file are defined locally.
-const ArchiveIcon: React.FC = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" /></svg>;
-const ListIcon: React.FC = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" /></svg>;
 
 export default Dashboard;
