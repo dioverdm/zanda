@@ -237,8 +237,12 @@ const App: React.FC = () => {
 
   const renderContent = () => {
     switch (currentPage) {
-      case Page.LOGIN:
-        return <Login onLogin={handleLogin} onNavigateToRegister={() => navigate('/register')} />;
+      // En el renderContent del App.tsx, para la página LOGIN:
+case Page.LOGIN:
+  return <Login 
+    onLogin={handleLogin} 
+    onNavigateToRegister={() => navigate('/register')} 
+  />;
       case Page.DASHBOARD:
         return <Dashboard items={items} transactions={transactions} onNavigate={navigateTo} />;
       case Page.INVENTORY:

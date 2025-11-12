@@ -98,32 +98,37 @@ const Login: React.FC < LoginProps > = ({ onLogin, onNavigateToRegister }) => {
             </div>
           </div>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors transform hover:scale-105 active:scale-95"
-          >
-            {loading ? (
-              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-            ) : (
-              'Sign In'
-            )}
-          </button>
+          <div className="space-y-4">
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors transform hover:scale-105 active:scale-95"
+            >
+              {loading ? (
+                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+              ) : (
+                'Sign In'
+              )}
+            </button>
 
-          <div className="text-center">
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              Don't have an account?{' '}
-              <button
-                type="button"
-                className="flex items-center justify-center gap-2 w-full mt-4 py-2 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-indigo-600 bg-indigo-50 hover:bg-indigo-100 dark:text-indigo-400 dark:bg-indigo-900/20 dark:hover:bg-indigo-900/30"
-                onClick={onNavigateToRegister}
-              >
-                <UserPlus className="h-4 w-4" />
-                Create New Account
-              </button>
-            </p>
+            {/* Botón de crear cuenta - FUERA del formulario de login */}
+            <button
+              type="button"
+              onClick={onNavigateToRegister}
+              className="w-full flex items-center justify-center gap-2 py-3 px-4 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors transform hover:scale-105 active:scale-95"
+            >
+              <UserPlus className="h-4 w-4" />
+              Create New Account
+            </button>
           </div>
         </form>
+
+        {/* Texto adicional fuera del formulario */}
+        <div className="text-center">
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            Don't have an account? Click the button above to register.
+          </p>
+        </div>
       </div>
     </div>
   );
