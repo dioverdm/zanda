@@ -1,9 +1,6 @@
 import React, { useMemo } from 'react';
 import { Item, Transaction, Page, TransactionType } from '../types';
-import { QrCode, Plus, List, BarChart3, Package, Archive, TrendingUp, TrendingDown, ShoppingCart, Users } from 'lucide-react';
-
-// Make sure Recharts is available
-declare const Recharts: any;
+import { QrCode, Plus, List, BarChart3, Package, Archive, TrendingUp, TrendingDown, ShoppingCart } from 'lucide-react';
 
 interface DashboardProps {
   items: Item[];
@@ -12,12 +9,10 @@ interface DashboardProps {
 }
 
 const Dashboard: React.FC<DashboardProps> = ({ items, transactions, onNavigate }) => {
-  const { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } = (window as any).Recharts || {};
-
   const totalItems = items.length;
   const totalStock = items.reduce((sum, item) => sum + item.quantity, 0);
   const lowStockItems = items.filter(item => item.quantity <= item.minStock).length;
-  const totalValue = items.reduce((sum, item) => sum + (item.quantity * 15), 0); // Assuming $15 per item
+  const totalValue = items.reduce((sum, item) => sum + (item.quantity * 15), 0);
 
   // Calculate today's metrics
   const todayTransactions = useMemo(() => {
@@ -32,29 +27,6 @@ const Dashboard: React.FC<DashboardProps> = ({ items, transactions, onNavigate }
   const todayItemsSold = todayTransactions
     .filter(t => t.type === TransactionType.OUTBOUND)
     .reduce((sum, t) => sum + Math.abs(t.quantityChange), 0);
-
-  // Weekly chart data
-  const weeklyData = useMemo(() => {
-    const today = new Date();
-    const last7Days = Array.from({ length: 7 }).map((_, i) => {
-      const d = new Date(today);
-      d.setDate(today.getDate() - i);
-      return d.toISOString().split('T')[0];
-    }).reverse();
-
-    return last7Days.map(date => {
-      const dayTransactions = transactions.filter(t => t.timestamp.startsWith(date));
-      const sales = dayTransactions
-        .filter(t => t.type === TransactionType.OUTBOUND)
-        .reduce((sum, t) => sum + Math.abs(t.quantityChange) * 15, 0);
-      
-      return {
-        date: new Date(date).toLocaleDateString('es-ES', { weekday: 'short' }),
-        Ventas: sales,
-        day: new Date(date).getDate()
-      };
-    });
-  }, [transactions]);
 
   // Recent activities
   const recentActivities = useMemo(() => {
@@ -80,20 +52,17 @@ const Dashboard: React.FC<DashboardProps> = ({ items, transactions, onNavigate }
       case TransactionType.INBOUND:
         return { 
           icon: 'fas fa-box', 
-          color: 'linear-gradient(135deg, #00C9FF 0%, #92FE9D 100%)',
-          bgColor: 'from-cyan-400 to-green-400'
+          color: 'linear-gradient(135deg, #00C9FF 0%, #92FE9D 100%)'
         };
       case TransactionType.OUTBOUND:
         return { 
           icon: 'fas fa-shopping-cart', 
-          color: 'linear-gradient(135deg, #6B00FF 0%, #B266FF 100%)',
-          bgColor: 'from-purple-500 to-purple-300'
+          color: 'linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%)'
         };
       case TransactionType.ADJUSTMENT:
         return { 
           icon: 'fas fa-exchange-alt', 
-          color: 'linear-gradient(135deg, #FF9A9E 0%, #FECFEF 100%)',
-          bgColor: 'from-pink-400 to-pink-200'
+          color: 'linear-gradient(135deg, #FF9A9E 0%, #FECFEF 100%)'
         };
     }
   };
@@ -109,295 +78,623 @@ const Dashboard: React.FC<DashboardProps> = ({ items, transactions, onNavigate }
     }
   };
 
-  const getActivityDescription = (activity: any) => {
-    return activity.itemName;
-  };
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 pb-20">
+    <div className="dashboard-container">
       {/* Header Section */}
-      <div className="bg-gradient-to-br from-purple-600 to-purple-400 text-white px-6 pt-8 pb-32 rounded-b-[60px] shadow-xl relative overflow-hidden">
-        {/* Background Pattern */}
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-10 right-10 w-20 h-20 bg-white rounded-full"></div>
-          <div className="absolute bottom-20 left-10 w-16 h-16 bg-white rounded-full"></div>
-          <div className="absolute top-32 left-20 w-12 h-12 bg-white rounded-full"></div>
-        </div>
-
-        <div className="relative z-10">
-          {/* Welcome Section */}
-          <div className="flex justify-between items-start mb-8">
+      <header className="dashboard-header">
+        <div className="header-top">
+          <div className="logo">
+            <div className="logo-icon">
+              <Package className="icon" />
+            </div>
             <div>
-              <h1 className="text-2xl font-bold mb-1">¡Hola! 👋</h1>
-              <p className="text-purple-100">Bienvenido a LiquidPOS</p>
-            </div>
-            <div className="flex gap-3">
-              <button className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-sm hover:bg-white/30 transition-all duration-300">
-                <i className="fas fa-bell text-white text-lg"></i>
-              </button>
-              <button className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-sm hover:bg-white/30 transition-all duration-300">
-                <i className="fas fa-cog text-white text-lg"></i>
-              </button>
+              <h1>LiquidPOS</h1>
+              <p>Gestión de Inventario</p>
             </div>
           </div>
+          <div className="header-actions">
+            <button className="icon-btn">
+              <i className="fas fa-bell"></i>
+            </button>
+            <button className="icon-btn">
+              <i className="fas fa-cog"></i>
+            </button>
+          </div>
+        </div>
 
-          {/* Balance Card */}
-          <div className="bg-white/20 backdrop-blur-md rounded-3xl p-6 border border-white/30 shadow-2xl">
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <p className="text-purple-100 text-sm font-medium">Valor del Inventario</p>
-                <h2 className="text-3xl font-bold text-white mt-1">${totalValue.toLocaleString()}</h2>
-              </div>
-              <div className="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center">
-                <Package className="h-7 w-7 text-white" />
-              </div>
+        {/* Balance Card */}
+        <div className="balance-card">
+          <div className="balance-label">Valor del Inventario</div>
+          <div className="balance-amount">${totalValue.toLocaleString()}</div>
+          <div className="balance-details">
+            <div className="balance-detail-item">
+              <TrendingUp className="detail-icon" />
+              <span>${todaySales.toLocaleString()}</span>
+              <div className="detail-label">Ventas hoy</div>
             </div>
-            
-            <div className="flex justify-between items-center">
-              <div className="bg-white/20 px-4 py-2 rounded-full">
-                <div className="flex items-center gap-2">
-                  <TrendingUp className="h-4 w-4 text-green-300" />
-                  <span className="text-white text-sm font-medium">${todaySales.toLocaleString()}</span>
-                </div>
-                <p className="text-purple-100 text-xs mt-1">Ventas hoy</p>
-              </div>
-              
-              <div className="bg-white/20 px-4 py-2 rounded-full">
-                <div className="flex items-center gap-2">
-                  <Package className="h-4 w-4 text-blue-300" />
-                  <span className="text-white text-sm font-medium">{totalItems}</span>
-                </div>
-                <p className="text-purple-100 text-xs mt-1">Productos</p>
-              </div>
+            <div className="balance-detail-item">
+              <Package className="detail-icon" />
+              <span>{totalItems}</span>
+              <div className="detail-label">Productos</div>
             </div>
           </div>
         </div>
-      </div>
+      </header>
 
       {/* Quick Actions */}
-      <div className="grid grid-cols-4 gap-3 px-6 -mt-16 relative z-20">
-        <button 
-          onClick={() => onNavigate(Page.SCANNER)}
-          className="bg-white rounded-2xl p-4 shadow-2xl border border-gray-100 hover:shadow-2xl hover:scale-105 transition-all duration-300 group"
-        >
-          <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-300 rounded-2xl flex items-center justify-center mb-3 mx-auto group-hover:scale-110 transition-transform">
-            <QrCode className="h-6 w-6 text-white" />
+      <div className="quick-actions">
+        <button className="action-btn" onClick={() => onNavigate(Page.SCANNER)}>
+          <div className="action-icon action-scanner">
+            <QrCode className="icon" />
           </div>
-          <span className="text-xs font-semibold text-gray-700 text-center block">Escanear</span>
+          <span className="action-label">Escanear</span>
         </button>
-
-        <button 
-          onClick={() => onNavigate(Page.ITEM_FORM)}
-          className="bg-white rounded-2xl p-4 shadow-2xl border border-gray-100 hover:shadow-2xl hover:scale-105 transition-all duration-300 group"
-        >
-          <div className="w-12 h-12 bg-gradient-to-br from-green-400 to-cyan-400 rounded-2xl flex items-center justify-center mb-3 mx-auto group-hover:scale-110 transition-transform">
-            <Plus className="h-6 w-6 text-white" />
+        <button className="action-btn" onClick={() => onNavigate(Page.ITEM_FORM)}>
+          <div className="action-icon action-add">
+            <Plus className="icon" />
           </div>
-          <span className="text-xs font-semibold text-gray-700 text-center block">Agregar</span>
+          <span className="action-label">Agregar</span>
         </button>
-
-        <button 
-          onClick={() => onNavigate(Page.INVENTORY)}
-          className="bg-white rounded-2xl p-4 shadow-2xl border border-gray-100 hover:shadow-2xl hover:scale-105 transition-all duration-300 group"
-        >
-          <div className="w-12 h-12 bg-gradient-to-br from-pink-400 to-pink-300 rounded-2xl flex items-center justify-center mb-3 mx-auto group-hover:scale-110 transition-transform">
-            <List className="h-6 w-6 text-white" />
+        <button className="action-btn" onClick={() => onNavigate(Page.INVENTORY)}>
+          <div className="action-icon action-inventory">
+            <List className="icon" />
           </div>
-          <span className="text-xs font-semibold text-gray-700 text-center block">Inventario</span>
+          <span className="action-label">Inventario</span>
         </button>
-
-        <button 
-          onClick={() => onNavigate(Page.REPORTS)}
-          className="bg-white rounded-2xl p-4 shadow-2xl border border-gray-100 hover:shadow-2xl hover:scale-105 transition-all duration-300 group"
-        >
-          <div className="w-12 h-12 bg-gradient-to-br from-yellow-400 to-orange-400 rounded-2xl flex items-center justify-center mb-3 mx-auto group-hover:scale-110 transition-transform">
-            <BarChart3 className="h-6 w-6 text-white" />
+        <button className="action-btn" onClick={() => onNavigate(Page.REPORTS)}>
+          <div className="action-icon action-reports">
+            <BarChart3 className="icon" />
           </div>
-          <span className="text-xs font-semibold text-gray-700 text-center block">Reportes</span>
+          <span className="action-label">Reportes</span>
         </button>
       </div>
 
       {/* Main Content */}
-      <div className="px-6 mt-8">
-        {/* Stats Overview */}
-        <div className="flex justify-between items-center mb-6">
-          <h3 className="text-lg font-bold text-gray-800">Resumen General</h3>
-          <button className="text-purple-600 text-sm font-semibold hover:text-purple-700 transition-colors">
-            Ver todo
-          </button>
+      <main className="main-content">
+        <div className="section-title">
+          <span>Resumen General</span>
+          <a href="#" className="view-all">Ver todo</a>
         </div>
 
-        <div className="grid grid-cols-2 gap-4 mb-8">
-          <div className="bg-white rounded-2xl p-5 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300">
-            <div className="flex items-center justify-between mb-3">
-              <div className="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center">
-                <Package className="h-5 w-5 text-purple-600" />
+        {/* Stats Cards */}
+        <div className="stats-container">
+          <div className="stat-card">
+            <div className="stat-header">
+              <div className="stat-icon">
+                <Package className="icon" />
               </div>
-              <TrendingUp className="h-5 w-5 text-green-500" />
+              <TrendingUp className="trend-icon trend-up" />
             </div>
-            <h4 className="text-2xl font-bold text-gray-800 mb-1">{totalItems}</h4>
-            <p className="text-gray-500 text-sm">Total Productos</p>
+            <div className="stat-value">{totalItems}</div>
+            <div className="stat-title">Total Productos</div>
           </div>
 
-          <div className="bg-white rounded-2xl p-5 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300">
-            <div className="flex items-center justify-between mb-3">
-              <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center">
-                <Archive className="h-5 w-5 text-blue-600" />
+          <div className="stat-card">
+            <div className="stat-header">
+              <div className="stat-icon">
+                <Archive className="icon" />
               </div>
-              <TrendingUp className="h-5 w-5 text-green-500" />
+              <TrendingUp className="trend-icon trend-up" />
             </div>
-            <h4 className="text-2xl font-bold text-gray-800 mb-1">{totalStock}</h4>
-            <p className="text-gray-500 text-sm">Stock Total</p>
+            <div className="stat-value">{totalStock}</div>
+            <div className="stat-title">Stock Total</div>
           </div>
 
-          <div className="bg-white rounded-2xl p-5 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300">
-            <div className="flex items-center justify-between mb-3">
-              <div className="w-10 h-10 bg-red-100 rounded-xl flex items-center justify-center">
-                <i className="fas fa-exclamation-triangle text-red-500 text-lg"></i>
+          <div className="stat-card">
+            <div className="stat-header">
+              <div className="stat-icon">
+                <i className="fas fa-exclamation-triangle"></i>
               </div>
-              <TrendingDown className="h-5 w-5 text-red-500" />
+              <TrendingDown className="trend-icon trend-down" />
             </div>
-            <h4 className="text-2xl font-bold text-gray-800 mb-1">{lowStockItems}</h4>
-            <p className="text-gray-500 text-sm">Bajo Stock</p>
+            <div className="stat-value">{lowStockItems}</div>
+            <div className="stat-title">Bajo Stock</div>
           </div>
 
-          <div className="bg-white rounded-2xl p-5 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300">
-            <div className="flex items-center justify-between mb-3">
-              <div className="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center">
-                <ShoppingCart className="h-5 w-5 text-green-600" />
+          <div className="stat-card">
+            <div className="stat-header">
+              <div className="stat-icon">
+                <ShoppingCart className="icon" />
               </div>
-              <TrendingUp className="h-5 w-5 text-green-500" />
+              <TrendingUp className="trend-icon trend-up" />
             </div>
-            <h4 className="text-2xl font-bold text-gray-800 mb-1">{todayItemsSold}</h4>
-            <p className="text-gray-500 text-sm">Vendidos Hoy</p>
-          </div>
-        </div>
-
-        {/* Sales Chart */}
-        <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 mb-8">
-          <div className="flex justify-between items-center mb-6">
-            <h3 className="text-lg font-bold text-gray-800">Ventas de la Semana</h3>
-            <span className="text-sm text-gray-500">Últimos 7 días</span>
-          </div>
-          
-          <div className="h-48">
-            {ResponsiveContainer && BarChart ? (
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={weeklyData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                  <XAxis 
-                    dataKey="date" 
-                    axisLine={false}
-                    tickLine={false}
-                    tick={{ fill: '#6B7280', fontSize: 12 }}
-                  />
-                  <YAxis 
-                    axisLine={false}
-                    tickLine={false}
-                    tick={{ fill: '#6B7280', fontSize: 12 }}
-                    tickFormatter={(value) => `$${value}`}
-                  />
-                  <Tooltip 
-                    formatter={(value) => [`$${value}`, 'Ventas']}
-                    contentStyle={{ 
-                      borderRadius: '12px',
-                      border: 'none',
-                      boxShadow: '0 10px 25px rgba(0,0,0,0.1)'
-                    }}
-                  />
-                  <Bar 
-                    dataKey="Ventas" 
-                    fill="url(#colorSales)" 
-                    radius={[8, 8, 0, 0]}
-                  />
-                  <defs>
-                    <linearGradient id="colorSales" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#6B00FF" stopOpacity={0.8}/>
-                      <stop offset="100%" stopColor="#B266FF" stopOpacity={0.8}/>
-                    </linearGradient>
-                  </defs>
-                </BarChart>
-              </ResponsiveContainer>
-            ) : (
-              <div className="flex items-center justify-center h-full text-gray-400">
-                <div className="text-center">
-                  <BarChart3 className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                  <p>Gráfico no disponible</p>
-                </div>
-              </div>
-            )}
+            <div className="stat-value">{todayItemsSold}</div>
+            <div className="stat-title">Vendidos Hoy</div>
           </div>
         </div>
 
         {/* Recent Activity */}
-        <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
-          <div className="flex justify-between items-center mb-6">
-            <h3 className="text-lg font-bold text-gray-800">Actividad Reciente</h3>
-            <button className="text-purple-600 text-sm font-semibold hover:text-purple-700 transition-colors">
-              Ver todo
-            </button>
-          </div>
-
-          <div className="space-y-4">
-            {recentActivities.length === 0 ? (
-              <div className="text-center py-8 text-gray-400">
-                <Package className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                <p>No hay actividad reciente</p>
-              </div>
-            ) : (
-              recentActivities.map((activity) => {
-                const iconInfo = getActivityIcon(activity.type);
-                const isSale = activity.type === TransactionType.OUTBOUND;
-                
-                return (
-                  <div 
-                    key={activity.id} 
-                    className="flex items-center p-4 rounded-xl bg-gray-50 hover:bg-gray-100 transition-all duration-300 group"
-                  >
-                    <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${iconInfo.bgColor} flex items-center justify-center mr-4 group-hover:scale-110 transition-transform`}>
-                      <i className={`${iconInfo.icon} text-white text-lg`}></i>
-                    </div>
-                    
-                    <div className="flex-1 min-w-0">
-                      <h4 className="font-semibold text-gray-800 text-sm mb-1">
-                        {getActivityTitle(activity)}
-                      </h4>
-                      <p className="text-gray-500 text-sm truncate">
-                        {getActivityDescription(activity)}
-                      </p>
-                      <p className="text-gray-400 text-xs mt-1">
-                        {new Date(activity.timestamp).toLocaleTimeString('es-ES', { 
-                          hour: '2-digit', 
-                          minute: '2-digit' 
-                        })}
-                      </p>
-                    </div>
-
-                    {isSale && (
-                      <div className="text-right">
-                        <div className="text-green-500 font-bold text-sm">
-                          +${activity.amount}
-                        </div>
-                        <div className="text-gray-400 text-xs">
-                          {Math.abs(activity.quantity)} unidades
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                );
-              })
-            )}
-          </div>
+        <div className="section-title">
+          <span>Actividad Reciente</span>
+          <a href="#" className="view-all">Ver todo</a>
         </div>
-      </div>
+
+        <div className="activity-list">
+          {recentActivities.length === 0 ? (
+            <div className="empty-state">
+              <Package className="empty-icon" />
+              <p>No hay actividad reciente</p>
+            </div>
+          ) : (
+            recentActivities.map((activity) => {
+              const iconInfo = getActivityIcon(activity.type);
+              const isSale = activity.type === TransactionType.OUTBOUND;
+              
+              return (
+                <div key={activity.id} className="activity-item">
+                  <div 
+                    className="activity-icon"
+                    style={{ background: iconInfo.color }}
+                  >
+                    <i className={iconInfo.icon}></i>
+                  </div>
+                  <div className="activity-details">
+                    <div className="activity-title">{getActivityTitle(activity)}</div>
+                    <div className="activity-description">{activity.itemName}</div>
+                    <div className="activity-time">
+                      {new Date(activity.timestamp).toLocaleTimeString('es-ES', { 
+                        hour: '2-digit', 
+                        minute: '2-digit' 
+                      })}
+                    </div>
+                  </div>
+                  {isSale && (
+                    <div className="activity-amount">
+                      +${activity.amount}
+                      <div className="activity-quantity">
+                        {Math.abs(activity.quantity)} unidades
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })
+          )}
+        </div>
+      </main>
 
       {/* Floating Action Button */}
       <button 
+        className="fab"
         onClick={() => onNavigate(Page.ITEM_FORM)}
-        className="fixed bottom-24 right-6 w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-600 to-purple-400 text-white flex items-center justify-center shadow-2xl hover:shadow-3xl hover:scale-110 transition-all duration-300 z-50"
       >
-        <Plus className="h-7 w-7" />
+        <Plus className="icon" />
       </button>
+
+      <style jsx>{`
+        .dashboard-container {
+          min-height: 100vh;
+          background: linear-gradient(135deg, var(--light) 0%, #e6e9f0 100%);
+          position: relative;
+        }
+
+        /* Header Styles */
+        .dashboard-header {
+          background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+          color: white;
+          padding: 20px 15px 80px;
+          border-radius: 0 0 40px 40px;
+          position: relative;
+          box-shadow: var(--shadow);
+        }
+
+        .header-top {
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
+          margin-bottom: 25px;
+        }
+
+        .logo {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+        }
+
+        .logo-icon {
+          width: 50px;
+          height: 50px;
+          background: rgba(255, 255, 255, 0.2);
+          border-radius: 15px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          backdrop-filter: blur(10px);
+        }
+
+        .logo .icon {
+          width: 24px;
+          height: 24px;
+          color: white;
+        }
+
+        .logo h1 {
+          font-weight: 700;
+          font-size: 1.4rem;
+          margin: 0;
+        }
+
+        .logo p {
+          font-size: 0.8rem;
+          opacity: 0.9;
+          margin: 0;
+        }
+
+        .header-actions {
+          display: flex;
+          gap: 10px;
+        }
+
+        .icon-btn {
+          background: rgba(255, 255, 255, 0.2);
+          border: none;
+          width: 44px;
+          height: 44px;
+          border-radius: 12px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: white;
+          font-size: 1.1rem;
+          cursor: pointer;
+          transition: var(--transition);
+          backdrop-filter: blur(10px);
+        }
+
+        .icon-btn:hover {
+          background: rgba(255, 255, 255, 0.3);
+          transform: translateY(-2px);
+        }
+
+        .balance-card {
+          background: var(--glass-bg);
+          backdrop-filter: blur(10px);
+          border-radius: 20px;
+          padding: 20px;
+          box-shadow: var(--shadow);
+          border: 1px solid var(--glass-border);
+        }
+
+        .balance-label {
+          font-size: 0.9rem;
+          opacity: 0.9;
+          margin-bottom: 8px;
+        }
+
+        .balance-amount {
+          font-size: 2.2rem;
+          font-weight: 700;
+          margin-bottom: 15px;
+        }
+
+        .balance-details {
+          display: flex;
+          justify-content: space-between;
+        }
+
+        .balance-detail-item {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          background: rgba(255, 255, 255, 0.2);
+          padding: 8px 12px;
+          border-radius: 20px;
+          min-width: 80px;
+        }
+
+        .detail-icon {
+          width: 16px;
+          height: 16px;
+          margin-bottom: 4px;
+        }
+
+        .balance-detail-item span {
+          font-weight: 600;
+          font-size: 0.9rem;
+          margin-bottom: 2px;
+        }
+
+        .detail-label {
+          font-size: 0.7rem;
+          opacity: 0.9;
+        }
+
+        /* Quick Actions */
+        .quick-actions {
+          display: flex;
+          justify-content: space-between;
+          margin-top: -40px;
+          padding: 0 15px;
+          position: relative;
+          z-index: 10;
+        }
+
+        .action-btn {
+          background: white;
+          border: none;
+          border-radius: 15px;
+          padding: 15px 8px;
+          width: 23%;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          box-shadow: var(--shadow);
+          cursor: pointer;
+          transition: var(--transition);
+        }
+
+        .action-btn:hover {
+          transform: translateY(-5px);
+          box-shadow: 0 12px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .action-icon {
+          width: 48px;
+          height: 48px;
+          border-radius: 12px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin-bottom: 8px;
+          color: white;
+        }
+
+        .action-icon .icon {
+          width: 20px;
+          height: 20px;
+        }
+
+        .action-scanner {
+          background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+        }
+
+        .action-add {
+          background: linear-gradient(135deg, #00C9FF 0%, #92FE9D 100%);
+        }
+
+        .action-inventory {
+          background: linear-gradient(135deg, #FF9A9E 0%, #FECFEF 100%);
+        }
+
+        .action-reports {
+          background: linear-gradient(135deg, #A8FF78 0%, #78FFD6 100%);
+        }
+
+        .action-label {
+          font-size: 0.7rem;
+          font-weight: 500;
+          text-align: center;
+          color: var(--text);
+        }
+
+        /* Main Content */
+        .main-content {
+          padding: 20px 15px 80px;
+        }
+
+        .section-title {
+          font-size: 1.2rem;
+          font-weight: 600;
+          margin-bottom: 15px;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        }
+
+        .view-all {
+          font-size: 0.85rem;
+          color: var(--primary);
+          font-weight: 500;
+          text-decoration: none;
+        }
+
+        /* Stats Cards */
+        .stats-container {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 12px;
+          margin-bottom: 25px;
+        }
+
+        .stat-card {
+          background: var(--glass-bg);
+          backdrop-filter: blur(10px);
+          border-radius: 15px;
+          padding: 15px;
+          box-shadow: var(--shadow);
+          border: 1px solid var(--glass-border);
+          transition: var(--transition);
+        }
+
+        .stat-card:hover {
+          transform: translateY(-3px);
+          box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 10px;
+        }
+
+        .stat-icon {
+          width: 36px;
+          height: 36px;
+          border-radius: 10px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: rgba(107, 0, 255, 0.1);
+        }
+
+        .stat-icon .icon {
+          width: 18px;
+          height: 18px;
+          color: var(--primary);
+        }
+
+        .stat-icon i {
+          font-size: 1rem;
+          color: var(--primary);
+        }
+
+        .trend-icon {
+          width: 16px;
+          height: 16px;
+        }
+
+        .trend-up {
+          color: var(--success);
+        }
+
+        .trend-down {
+          color: var(--danger);
+        }
+
+        .stat-value {
+          font-size: 1.5rem;
+          font-weight: 700;
+          margin-bottom: 4px;
+          color: var(--dark);
+        }
+
+        .stat-title {
+          font-size: 0.8rem;
+          color: var(--text-light);
+        }
+
+        /* Activity List */
+        .activity-list {
+          background: var(--glass-bg);
+          backdrop-filter: blur(10px);
+          border-radius: 15px;
+          padding: 15px;
+          box-shadow: var(--shadow);
+          border: 1px solid var(--glass-border);
+        }
+
+        .empty-state {
+          text-align: center;
+          padding: 30px 20px;
+          color: var(--text-light);
+        }
+
+        .empty-icon {
+          width: 48px;
+          height: 48px;
+          margin-bottom: 12px;
+          opacity: 0.5;
+        }
+
+        .activity-item {
+          display: flex;
+          align-items: center;
+          padding: 12px 0;
+          border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .activity-item:last-child {
+          border-bottom: none;
+        }
+
+        .activity-icon {
+          width: 44px;
+          height: 44px;
+          border-radius: 12px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin-right: 12px;
+          color: white;
+          font-size: 1rem;
+        }
+
+        .activity-details {
+          flex: 1;
+        }
+
+        .activity-title {
+          font-weight: 500;
+          font-size: 0.9rem;
+          margin-bottom: 2px;
+          color: var(--dark);
+        }
+
+        .activity-description {
+          font-size: 0.8rem;
+          color: var(--text-light);
+          margin-bottom: 2px;
+        }
+
+        .activity-time {
+          font-size: 0.7rem;
+          color: var(--text-light);
+        }
+
+        .activity-amount {
+          text-align: right;
+          font-weight: 600;
+          font-size: 0.9rem;
+          color: var(--success);
+        }
+
+        .activity-quantity {
+          font-size: 0.7rem;
+          color: var(--text-light);
+          font-weight: normal;
+        }
+
+        /* Floating Action Button */
+        .fab {
+          position: fixed;
+          bottom: 80px;
+          right: 20px;
+          width: 60px;
+          height: 60px;
+          border-radius: 50%;
+          background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+          color: white;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border: none;
+          box-shadow: 0 5px 20px rgba(107, 0, 255, 0.4);
+          cursor: pointer;
+          transition: var(--transition);
+          z-index: 1000;
+        }
+
+        .fab:hover {
+          transform: scale(1.1);
+          box-shadow: 0 8px 25px rgba(107, 0, 255, 0.5);
+        }
+
+        .fab .icon {
+          width: 24px;
+          height: 24px;
+        }
+
+        @media (max-width: 480px) {
+          .dashboard-header {
+            border-radius: 0 0 30px 30px;
+          }
+          
+          .quick-actions {
+            padding: 0 10px;
+          }
+          
+          .action-btn {
+            padding: 12px 6px;
+          }
+          
+          .action-icon {
+            width: 42px;
+            height: 42px;
+          }
+        }
+      `}</style>
     </div>
   );
 };
