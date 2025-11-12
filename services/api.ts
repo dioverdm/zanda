@@ -25,31 +25,31 @@ class ApiService {
 
   // Auth endpoints
   async login(email: string, password: string): Promise<{ user: User }> {
-    return this.request('/auth/login', {
+    return this.request('http://dash.pogoos.xyz/api/auth/login', {
       method: 'POST',
       body: JSON.stringify({ email, password }),
     });
   }
 
   async register(userData: { email: string; password: string; name: string }): Promise<{ user: User }> {
-    return this.request('/auth/register', {
+    return this.request('http://dash.pogoos.xyz/api/auth/register', {
       method: 'POST',
       body: JSON.stringify(userData),
     });
   }
 
   async getProfile(): Promise<User> {
-    return this.request('/auth/profile');
+    return this.request('http://dash.pogoos.xyz/api/auth/profile');
   }
 
   async logout(): Promise<void> {
-    return this.request('/auth/logout', {
+    return this.request('http://dash.pogoos.xyz/api/auth/logout', {
       method: 'POST',
     });
   }
 
   async checkAuth(): Promise<{ authenticated: boolean }> {
-    return this.request('/auth/check');
+    return this.request('http://dash.pogoos.xyz/api/auth/check');
   }
 
   // Items endpoints
@@ -58,32 +58,32 @@ class ApiService {
   }
 
   async createItem(item: Omit<Item, 'id' | 'userId' | 'createdAt' | 'updatedAt'>): Promise<Item> {
-    return this.request('/items', {
+    return this.request('http://dash.pogoos.xyz/api/items', {
       method: 'POST',
       body: JSON.stringify(item),
     });
   }
 
   async updateItem(id: string, item: Partial<Item>): Promise<Item> {
-    return this.request(`/items/${id}`, {
+    return this.request(`http://dash.pogoos.xyz/api/items/${id}`, {
       method: 'PUT',
       body: JSON.stringify(item),
     });
   }
 
   async deleteItem(id: string): Promise<void> {
-    return this.request(`/items/${id}`, {
+    return this.request(`http://dash.pogoos.xyz/api/items/${id}`, {
       method: 'DELETE',
     });
   }
 
   // Locations endpoints
   async getLocations(): Promise<Location[]> {
-    return this.request('/locations');
+    return this.request('http://dash.pogoos.xyz/api/locations');
   }
 
   async createLocation(location: Omit<Location, 'id' | 'userId' | 'createdAt'>): Promise<Location> {
-    return this.request('/locations', {
+    return this.request('http://dash.pogoos.xyz/api/locations', {
       method: 'POST',
       body: JSON.stringify(location),
     });
@@ -91,11 +91,11 @@ class ApiService {
 
   // Transactions endpoints
   async getTransactions(): Promise<Transaction[]> {
-    return this.request('/transactions');
+    return this.request('http://dash.pogoos.xyz/api/transactions');
   }
 
   async createTransaction(transaction: Omit<Transaction, 'id' | 'userId'>): Promise<Transaction> {
-    return this.request('/transactions', {
+    return this.request('http://dash.pogoos.xyz/api/transactions', {
       method: 'POST',
       body: JSON.stringify(transaction),
     });
