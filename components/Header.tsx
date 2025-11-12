@@ -98,6 +98,8 @@ const Header: React.FC<HeaderProps> = ({ onNavigate, user, onLogout }) => {
           color: white;
           padding: 15px;
           box-shadow: var(--shadow);
+          position: fixed;
+          top: 0;
         }
 
         .header-content {
