@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Menu, X, Package, User, LogOut, ChevronDown } from 'lucide-react';
+import { Menu, X, Package, User, LogOut, ChevronDown, Home, BarChart3, Users, Settings } from 'lucide-react';
 import { Page, User as UserType } from '../types';
 
 interface HeaderProps {
@@ -10,124 +10,85 @@ interface HeaderProps {
 }
 
 const Header: React.FC < HeaderProps > = ({ onNavigate, user, onLogout }) => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
-  const navigate = useNavigate();
   const location = useLocation();
   
-  const navLinks = [
-    { path: '/', label: 'Dashboard' },
-    { path: '/inventory', label: 'Inventory' },
-    { path: '/scanner', label: 'Scanner' },
-    { path: '/locations', label: 'Locations' },
-    { path: '/report', label: 'Reports' },
+  const navItems = [
+    { path: '/', label: 'Inicio', icon: Home },
+    { path: '/reports', label: 'Reportes', icon: BarChart3 },
+    { path: '/inventory', label: 'Inventario', icon: Package },
+    { path: '/settings', label: 'Ajustes', icon: Settings },
   ];
   
-  const handleNavClick = (path: string) => {
-    navigate(path);
-    setIsMenuOpen(false);
-  };
-  
-  const handleUserMenuToggle = () => {
-    setIsUserMenuOpen(!isUserMenuOpen);
-  };
+  const isActive = (path: string) => location.pathname === path;
   
   return (
-    <header className="bg-white dark:bg-gray-800 shadow-lg sticky top-0 z-50">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
-          {/* Logo */}
-          <div className="flex items-center">
-            <button 
-              onClick={() => navigate('/')} 
-              className="flex items-center gap-3 text-xl font-bold text-indigo-600 dark:text-indigo-400 hover:scale-105 transition-transform"
-            >
-              <div className="bg-indigo-600 p-2 rounded-xl">
-                <Package className="h-6 w-6 text-white" />
-              </div>
-              <span>Zandash</span>
-            </button>
-          </div>
-
-          {/* Desktop Navigation */}
-          <div className="hidden md:block">
-            <div className="ml-10 flex items-baseline space-x-4">
-              {navLinks.map(({ path, label }) => (
-                <button
-                  key={path}
-                  onClick={() => handleNavClick(path)}
-                  className={`px-3 py-2 rounded-xl text-sm font-medium transition-all ${
-                    location.pathname === path
-                      ? 'bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300'
-                      : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white'
-                  }`}
-                >
-                  {label}
-                </button>
-              ))}
+    <>
+      {/* Top Header */}
+      <header className="bg-gradient-to-br from-[#6B00FF] to-[#B266FF] text-white px-5 py-4">
+        <div className="flex justify-between items-center">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center">
+              <Package className="h-6 w-6 text-[#6B00FF]" />
+            </div>
+            <div>
+              <h1 className="font-bold text-lg">LiquidPOS</h1>
+              <p className="text-xs opacity-90">Hola, {user.name} 👋</p>
             </div>
           </div>
-
-          {/* User Menu */}
-          <div className="flex items-center gap-4">
+          
+          <div className="flex gap-2">
+            <button className="w-9 h-9 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm hover:bg-white/30 transition-all">
+              <i className="fas fa-bell text-white text-sm"></i>
+            </button>
             <div className="relative">
-              <button
-                onClick={handleUserMenuToggle}
-                className="flex items-center gap-2 bg-gray-100 dark:bg-gray-700 px-3 py-2 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+              <button 
+                onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                className="w-9 h-9 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm hover:bg-white/30 transition-all"
               >
-                <User className="h-5 w-5" />
-                <span className="text-sm font-medium">{user.name}</span>
-                <ChevronDown className="h-4 w-4" />
+                <User className="h-4 w-4 text-white" />
               </button>
-
+              
               {isUserMenuOpen && (
-                <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 py-1">
-                  <div className="px-4 py-2 text-sm text-gray-700 dark:text-gray-300 border-b border-gray-200 dark:border-gray-600">
-                    Signed in as <br />
-                    <strong>{user.email}</strong>
+                <div className="absolute right-0 top-12 bg-white rounded-2xl shadow-2xl py-2 min-w-48 z-50">
+                  <div className="px-4 py-2 border-b border-gray-100">
+                    <p className="font-medium text-gray-900">{user.name}</p>
+                    <p className="text-sm text-gray-500">{user.email}</p>
                   </div>
                   <button
                     onClick={onLogout}
-                    className="flex items-center gap-2 w-full px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-50 dark:hover:bg-gray-700"
+                    className="w-full px-4 py-2 text-left text-red-500 hover:bg-gray-50 flex items-center gap-2"
                   >
                     <LogOut className="h-4 w-4" />
-                    Sign out
+                    Cerrar Sesión
                   </button>
                 </div>
               )}
             </div>
-
-            {/* Mobile menu button */}
-            <div className="md:hidden">
-              <button
-                onClick={() => setIsMenuOpen(!isMenuOpen)}
-                className="bg-gray-100 dark:bg-gray-700 inline-flex items-center justify-center p-2 rounded-xl text-gray-500 dark:text-gray-300 hover:text-gray-700 dark:hover:text-white hover:bg-gray-200 dark:hover:bg-gray-600 focus:outline-none transition-colors"
-              >
-                <span className="sr-only">Open main menu</span>
-                {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-              </button>
-            </div>
           </div>
         </div>
-      </div>
+      </header>
 
-      {/* Mobile Navigation */}
-      {isMenuOpen && (
-        <div className="md:hidden bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
-          <div className="px-2 pt-2 pb-3 space-y-1">
-            {navLinks.map(({ path, label }) => (
-              <button
-                key={path}
-                onClick={() => handleNavClick(path)}
-                className="block w-full text-left px-3 py-2 rounded-xl text-base font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-              >
-                {label}
-              </button>
-            ))}
-          </div>
+      {/* Bottom Navigation */}
+      <nav className="fixed bottom-0 left-0 right-0 max-w-480 mx-auto bg-white/95 backdrop-blur-md border-t border-gray-200/50">
+        <div className="flex justify-around py-3">
+          {navItems.map(({ path, label, icon: Icon }) => (
+            <button
+              key={path}
+              onClick={() => onNavigate(path as Page)}
+              className={`flex flex-col items-center px-4 py-2 rounded-xl transition-all ${
+                isActive(path) 
+                  ? 'text-[#6B00FF]' 
+                  : 'text-gray-500 hover:text-[#6B00FF]'
+              }`}
+            >
+              <Icon className={`h-5 w-5 mb-1 ${isActive(path) ? 'scale-110' : ''}`} />
+              <span className="text-xs font-medium">{label}</span>
+            </button>
+          ))}
         </div>
-      )}
-    </header>
+      </nav>
+    </>
   );
 };
 
