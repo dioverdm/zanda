@@ -96,9 +96,6 @@ const Dashboard: React.FC<DashboardProps> = ({ items, transactions, onNavigate }
             <button className="icon-btn">
               <i className="fas fa-bell"></i>
             </button>
-            <button className="icon-btn">
-              <i className="fas fa-cog"></i>
-            </button>
           </div>
         </div>
 
@@ -266,6 +263,7 @@ const Dashboard: React.FC<DashboardProps> = ({ items, transactions, onNavigate }
           min-height: 100vh;
           background: linear-gradient(135deg, var(--light) 0%, #e6e9f0 100%);
           position: relative;
+          padding-bottom: 80px; /* Space for bottom nav */
         }
 
         /* Header Styles */
