@@ -1,11 +1,12 @@
 import { Item, Location, Transaction, User } from '../types';
 
-const API_BASE_URL = 'http://dash.pogoos.xyz/api';
+// Usar ruta relativa que será redirigida por Vercel
+const API_BASE_URL = '/api';
 
 class ApiService {
   private async request(endpoint: string, options: RequestInit = {}) {
     const config = {
-      credentials: 'include' as RequestCredentials, // Incluye cookies de sesión
+      credentials: 'include' as RequestCredentials,
       headers: {
         'Content-Type': 'application/json',
         ...options.headers,
@@ -13,14 +14,46 @@ class ApiService {
       ...options,
     };
 
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
-    
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({ message: 'Network error' }));
-      throw new Error(error.message || 'Request failed');
-    }
+    console.log(`🔄 Making request to: ${API_BASE_URL}${endpoint}`);
 
-    return response.json();
+    try {
+      const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
+      
+      console.log(`📨 Response status: ${response.status} for ${endpoint}`);
+      
+      if (response.status === 401) {
+        throw new Error('Authentication required');
+      }
+      
+      if (!response.ok) {
+        let errorMessage = `Request failed with status ${response.status}`;
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.message || errorMessage;
+        } catch {
+          const errorText = await response.text();
+          errorMessage = errorText || errorMessage;
+        }
+        throw new Error(errorMessage);
+      }
+
+      if (response.status === 204) {
+        return null;
+      }
+
+      return response.json();
+    } catch (error) {
+      console.error('🚨 Network error:', error);
+      if (error.message.includes('Failed to fetch')) {
+        throw new Error('Cannot connect to server. Please check your internet connection.');
+      }
+      throw error;
+    }
+  }
+
+  // Test connection
+  async testConnection(): Promise<any> {
+    return this.request('/test');
   }
 
   // Auth endpoints
