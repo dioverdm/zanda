@@ -1,6 +1,6 @@
 import { Item, Location, Transaction, User } from '../types';
 
-const API_BASE_URL = 'http://localhost:3001/api';
+const API_BASE_URL = 'http://dash.pogoos.xyz/api';
 
 class ApiService {
   private async request(endpoint: string, options: RequestInit = {}) {
