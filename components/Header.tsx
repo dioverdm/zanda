@@ -9,19 +9,19 @@ interface HeaderProps {
   onLogout: () => void;
 }
 
-const Header: React.FC < HeaderProps > = ({ onNavigate, user, onLogout }) => {
+const Header: React.FC<HeaderProps> = ({ onNavigate, user, onLogout }) => {
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const location = useLocation();
-  
+
   const navItems = [
     { path: '/', label: 'Inicio', icon: Home },
     { path: '/inventory', label: 'Inventario', icon: Package },
     { path: '/reports', label: 'Reportes', icon: BarChart3 },
     { path: '/settings', label: 'Ajustes', icon: Settings },
   ];
-  
+
   const isActive = (path: string) => location.pathname === path;
-  
+
   return (
     <>
       {/* Top Header */}
@@ -55,9 +55,18 @@ const Header: React.FC < HeaderProps > = ({ onNavigate, user, onLogout }) => {
                     <div className="user-name">{user.name}</div>
                     <div className="user-email">{user.email}</div>
                   </div>
+                  
+                  <button
+                    onClick={() => onNavigate(Page.LOCATIONS)}
+                    className="menu-item"
+                  >
+                    <Settings className="icon" />
+                    Configuración
+                  </button>
+                  
                   <button
                     onClick={onLogout}
-                    className="logout-btn"
+                    className="menu-item logout"
                   >
                     <LogOut className="icon" />
                     Cerrar Sesión
@@ -175,7 +184,7 @@ const Header: React.FC < HeaderProps > = ({ onNavigate, user, onLogout }) => {
           background: white;
           border-radius: 15px;
           box-shadow: var(--shadow);
-          min-width: 200px;
+          min-width: 220px;
           z-index: 1000;
           overflow: hidden;
         }
@@ -196,7 +205,7 @@ const Header: React.FC < HeaderProps > = ({ onNavigate, user, onLogout }) => {
           color: var(--text-light);
         }
 
-        .logout-btn {
+        .menu-item {
           width: 100%;
           padding: 12px 15px;
           background: none;
@@ -204,17 +213,30 @@ const Header: React.FC < HeaderProps > = ({ onNavigate, user, onLogout }) => {
           display: flex;
           align-items: center;
           gap: 10px;
-          color: var(--danger);
+          color: var(--text);
           cursor: pointer;
           transition: var(--transition);
           font-size: 0.9rem;
+          border-bottom: 1px solid rgba(0, 0, 0, 0.05);
         }
 
-        .logout-btn:hover {
+        .menu-item:hover {
+          background: rgba(107, 0, 255, 0.05);
+        }
+
+        .menu-item:last-child {
+          border-bottom: none;
+        }
+
+        .menu-item.logout {
+          color: var(--danger);
+        }
+
+        .menu-item.logout:hover {
           background: rgba(244, 67, 54, 0.1);
         }
 
-        .logout-btn .icon {
+        .menu-item .icon {
           width: 16px;
           height: 16px;
         }
