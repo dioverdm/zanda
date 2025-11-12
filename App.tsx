@@ -16,39 +16,39 @@ const App: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   
-  const [currentUser, setCurrentUser] = useState < User | null > (null);
-  const [selectedItemId, setSelectedItemId] = useState < string | null > (null);
-  const [itemToEdit, setItemToEdit] = useState < Item | null > (null);
-  const [scannedSku, setScannedSku] = useState < string | null > (null);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
+  const [itemToEdit, setItemToEdit] = useState<Item | null>(null);
+  const [scannedSku, setScannedSku] = useState<string | null>(null);
   const [fromScanner, setFromScanner] = useState(false);
-  
-  const [locations, setLocations] = useState < Location[] > ([]);
-  const [categories, setCategories] = useState < string[] > ([]);
-  const [items, setItems] = useState < Item[] > ([]);
-  const [transactions, setTransactions] = useState < Transaction[] > ([]);
+
+  const [locations, setLocations] = useState<Location[]>([]);
+  const [categories, setCategories] = useState<string[]>([]);
+  const [items, setItems] = useState<Item[]>([]);
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
-  
+
   // Check authentication on app start
   useEffect(() => {
     const checkAuth = async () => {
-      const token = localStorage.getItem('token');
-      if (token) {
-        try {
+      try {
+        const { authenticated } = await apiService.checkAuth();
+        if (authenticated) {
           const user = await apiService.getProfile();
           setCurrentUser(user);
           await loadUserData();
-        } catch (error) {
-          localStorage.removeItem('token');
+        } else {
           navigate('/login');
         }
-      } else {
+      } catch (error) {
+        console.error('Auth check failed:', error);
         navigate('/login');
       }
       setLoading(false);
     };
     checkAuth();
-  }, []);
-  
+  }, [navigate]);
+
   const loadUserData = async () => {
     try {
       const [itemsData, locationsData, transactionsData] = await Promise.all([
@@ -67,7 +67,7 @@ const App: React.FC = () => {
       console.error('Failed to load user data:', error);
     }
   };
-  
+
   const getCurrentPage = (): Page => {
     const path = location.pathname;
     if (path === '/login') return Page.LOGIN;
@@ -79,10 +79,10 @@ const App: React.FC = () => {
     if (path === '/add-item' || path.startsWith('/edit-item/')) return Page.ITEM_FORM;
     return Page.DASHBOARD;
   };
-  
+
   const currentPage = getCurrentPage();
-  
-  const navigateTo = (page: Page, itemId ? : string) => {
+
+  const navigateTo = (page: Page, itemId?: string) => {
     if (page === Page.DASHBOARD) navigate('/');
     else if (page === Page.INVENTORY) navigate('/inventory');
     else if (page === Page.SCANNER) navigate('/scanner');
@@ -97,42 +97,53 @@ const App: React.FC = () => {
     setScannedSku(null);
     setFromScanner(false);
   };
-  
+
   const handleLogin = async (email: string, password: string) => {
-    const response = await apiService.login(email, password);
-    localStorage.setItem('token', response.token);
-    setCurrentUser(response.user);
-    await loadUserData();
-    navigate('/');
+    try {
+      const response = await apiService.login(email, password);
+      setCurrentUser(response.user);
+      await loadUserData();
+      navigate('/');
+    } catch (error: any) {
+      throw error;
+    }
   };
-  
-  const handleRegister = async (userData: { email: string;password: string;name: string }) => {
-    const response = await apiService.register(userData);
-    localStorage.setItem('token', response.token);
-    setCurrentUser(response.user);
-    await loadUserData();
-    navigate('/');
+
+  const handleRegister = async (userData: { email: string; password: string; name: string }) => {
+    try {
+      const response = await apiService.register(userData);
+      setCurrentUser(response.user);
+      await loadUserData();
+      navigate('/');
+    } catch (error: any) {
+      throw error;
+    }
   };
-  
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    setCurrentUser(null);
-    setItems([]);
-    setLocations([]);
-    setTransactions([]);
-    navigate('/login');
+
+  const handleLogout = async () => {
+    try {
+      await apiService.logout();
+    } catch (error) {
+      console.error('Logout error:', error);
+    } finally {
+      setCurrentUser(null);
+      setItems([]);
+      setLocations([]);
+      setTransactions([]);
+      navigate('/login');
+    }
   };
   
   const handleViewItem = (itemId: string) => {
     setSelectedItemId(itemId);
     navigate(`/item/${itemId}`);
   };
-  
+
   const handleEditItem = (item: Item) => {
     setItemToEdit(item);
     navigate(`/edit-item/${item.id}`);
   };
-  
+
   const handleAddNewItem = () => {
     setItemToEdit(null);
     setScannedSku(null);
@@ -161,8 +172,8 @@ const App: React.FC = () => {
       }
     }
   };
-  
-  const saveItem = async (itemData: Omit < Item, 'id' > & { id ? : string }) => {
+
+  const saveItem = async (itemData: Omit<Item, 'id' | 'userId' | 'createdAt' | 'updatedAt'> & { id?: string }) => {
     try {
       if (itemData.id) {
         const updatedItem = await apiService.updateItem(itemData.id, itemData);
@@ -176,8 +187,8 @@ const App: React.FC = () => {
       alert('Failed to save item');
     }
   };
-  
-  const updateStock = useCallback(async (sku: string, quantityChange: number, type: TransactionType, notes ? : string) => {
+
+  const updateStock = useCallback(async (sku: string, quantityChange: number, type: TransactionType, notes?: string) => {
     try {
       const itemToUpdate = items.find(item => item.sku === sku);
       if (!itemToUpdate) {
@@ -188,10 +199,10 @@ const App: React.FC = () => {
         quantity: itemToUpdate.quantity + quantityChange
       });
       
-      setItems(prev => prev.map(item =>
+      setItems(prev => prev.map(item => 
         item.id === itemToUpdate.id ? updatedItem : item
       ));
-      
+
       const newTransaction = await apiService.createTransaction({
         itemId: itemToUpdate.id,
         type,
@@ -207,11 +218,11 @@ const App: React.FC = () => {
       return false;
     }
   }, [items]);
-  
+
   const selectedItem = useMemo(() => {
     return items.find(item => item.id === selectedItemId) || null;
   }, [items, selectedItemId]);
-  
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-100 dark:bg-gray-900 flex items-center justify-center">
@@ -219,11 +230,11 @@ const App: React.FC = () => {
       </div>
     );
   }
-  
+
   if (!currentUser && currentPage !== Page.LOGIN) {
     return <Login onLogin={handleLogin} onNavigateToRegister={() => navigate('/register')} />;
   }
-  
+
   const renderContent = () => {
     switch (currentPage) {
       case Page.LOGIN:
@@ -233,31 +244,67 @@ const App: React.FC = () => {
       case Page.INVENTORY:
         return <InventoryList items={items} locations={locations} onView={handleViewItem} onEdit={handleEditItem} onDelete={handleDeleteItem} onAddNew={handleAddNewItem} />;
       case Page.ITEM_DETAIL:
-        return selectedItem ? <ItemDetail item={selectedItem} locations={locations} transactions={transactions.filter(t => t.itemId === selectedItem.id)} onEdit={handleEditItem} onDelete={handleDeleteItem} /> : <p>Item not found</p>;
+        return selectedItem ? (
+          <ItemDetail 
+            item={selectedItem} 
+            locations={locations} 
+            transactions={transactions.filter(t => t.itemId === selectedItem.id)} 
+            onEdit={handleEditItem} 
+            onDelete={handleDeleteItem} 
+          />
+        ) : (
+          <div className="text-center py-8">
+            <p className="text-gray-500 dark:text-gray-400">Item not found</p>
+          </div>
+        );
       case Page.ITEM_FORM:
-        return <ItemForm itemToEdit={itemToEdit} scannedSku={scannedSku || undefined} fromScanner={fromScanner} locations={locations} categories={categories} onSave={saveItem} onCancel={() => {
-          setScannedSku(null);
-          setFromScanner(false);
-          navigate(itemToEdit ? `/item/${itemToEdit.id}` : '/inventory');
-        }} />;
+        return (
+          <ItemForm 
+            itemToEdit={itemToEdit} 
+            scannedSku={scannedSku || undefined} 
+            fromScanner={fromScanner} 
+            locations={locations} 
+            categories={categories} 
+            onSave={saveItem} 
+            onCancel={() => {
+              setScannedSku(null);
+              setFromScanner(false);
+              navigate(itemToEdit ? `/item/${itemToEdit.id}` : '/inventory');
+            }} 
+          />
+        );
       case Page.SCANNER:
-        return <ScannerPage onStockUpdate={updateStock} onNavigateToDetail={(sku) => {
-            const item = items.find(i => i.sku === sku);
-            if (item) {
-              setSelectedItemId(item.id);
-              navigate(`/item/${item.id}`);
-            }
-            else alert('Item not found');
-        }} onNavigateToForm={handleAddItemFromScanner} />;
+        return (
+          <ScannerPage 
+            onStockUpdate={updateStock} 
+            onNavigateToDetail={(sku) => {
+              const item = items.find(i => i.sku === sku);
+              if (item) {
+                setSelectedItemId(item.id);
+                navigate(`/item/${item.id}`);
+              } else {
+                alert('Item not found');
+              }
+            }} 
+            onNavigateToForm={handleAddItemFromScanner} 
+          />
+        );
       case Page.LOCATIONS:
-        return <LocationsPage locations={locations} setLocations={setLocations} categories={categories} setCategories={setCategories} />;
+        return (
+          <LocationsPage 
+            locations={locations} 
+            setLocations={setLocations} 
+            categories={categories} 
+            setCategories={setCategories} 
+          />
+        );
       case Page.REPORTS:
         return <ReportsPage transactions={transactions} items={items} />;
       default:
         return <Dashboard items={items} transactions={transactions} onNavigate={navigateTo} />;
     }
   };
-  
+
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200">
       {currentUser && <Header onNavigate={navigateTo} user={currentUser} onLogout={handleLogout} />}
