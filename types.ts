@@ -1,6 +1,13 @@
+export interface User {
+  id: string;
+  email: string;
+  name: string;
+  createdAt: string;
+}
 
 export interface Item {
   id: string;
+  userId: string;
   name: string;
   sku: string;
   category: string;
@@ -8,35 +15,43 @@ export interface Item {
   quantity: number;
   minStock: number;
   description: string;
-  imageUrl?: string;
+  imageUrl: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface Location {
   id: string;
+  userId: string;
   name: string;
-}
-
-export enum TransactionType {
-  INBOUND = 'Inbound',
-  OUTBOUND = 'Outbound',
-  ADJUSTMENT = 'Adjustment',
+  description ? : string;
+  createdAt: string;
 }
 
 export interface Transaction {
   id: string;
+  userId: string;
   itemId: string;
   type: TransactionType;
   quantityChange: number;
+  notes ? : string;
   timestamp: string;
-  notes?: string;
+}
+
+export enum TransactionType {
+  INBOUND = 'INBOUND',
+    OUTBOUND = 'OUTBOUND',
+    ADJUSTMENT = 'ADJUSTMENT'
 }
 
 export enum Page {
-  DASHBOARD = 'Dashboard',
-  INVENTORY = 'Inventory',
-  ITEM_DETAIL = 'ItemDetail',
-  ITEM_FORM = 'ItemForm',
-  SCANNER = 'Scanner',
-  LOCATIONS = 'Locations',
-  REPORTS = 'Reports',
+  DASHBOARD = 'DASHBOARD',
+    INVENTORY = 'INVENTORY',
+    ITEM_DETAIL = 'ITEM_DETAIL',
+    ITEM_FORM = 'ITEM_FORM',
+    SCANNER = 'SCANNER',
+    LOCATIONS = 'LOCATIONS',
+    REPORTS = 'REPORTS',
+    LOGIN = 'LOGIN',
+    REGISTER = 'REGISTER'
 }

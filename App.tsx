@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Item, Location, Transaction, Page, TransactionType } from './types';
+import { Item, Location, Transaction, Page, TransactionType, User } from './types';
 import Header from './components/Header';
 import Dashboard from './components/Dashboard';
 import InventoryList from './components/InventoryList';
@@ -9,78 +9,68 @@ import ItemForm from './components/ItemForm';
 import ScannerPage from './components/ScannerPage';
 import LocationsPage from './components/LocationsPage';
 import ReportsPage from './components/ReportsPage';
-import { initDB, saveItems, getItems, saveLocations, getLocations, saveTransactions, getTransactions, addTransaction } from './utils/indexedDB';
+import Login from './components/Login';
+import { apiService } from './services/api';
 
 const App: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   
-  const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
-  const [itemToEdit, setItemToEdit] = useState<Item | null>(null);
-  const [scannedSku, setScannedSku] = useState<string | null>(null);
+  const [currentUser, setCurrentUser] = useState < User | null > (null);
+  const [selectedItemId, setSelectedItemId] = useState < string | null > (null);
+  const [itemToEdit, setItemToEdit] = useState < Item | null > (null);
+  const [scannedSku, setScannedSku] = useState < string | null > (null);
   const [fromScanner, setFromScanner] = useState(false);
-
-  // Empty initial state
-  const [locations, setLocations] = useState<Location[]>([]);
-  const [categories, setCategories] = useState<string[]>([]);
-  const [items, setItems] = useState<Item[]>([]);
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
-
-  // Initialize IndexedDB and sync data
+  
+  const [locations, setLocations] = useState < Location[] > ([]);
+  const [categories, setCategories] = useState < string[] > ([]);
+  const [items, setItems] = useState < Item[] > ([]);
+  const [transactions, setTransactions] = useState < Transaction[] > ([]);
+  const [loading, setLoading] = useState(true);
+  
+  // Check authentication on app start
   useEffect(() => {
-    const initializeApp = async () => {
-      try {
-        await initDB();
-        const dbItems = await getItems();
-        const dbLocations = await getLocations();
-        const dbTransactions = await getTransactions();
-        
-        if (dbItems.length > 0) {
-          setItems(dbItems);
+    const checkAuth = async () => {
+      const token = localStorage.getItem('token');
+      if (token) {
+        try {
+          const user = await apiService.getProfile();
+          setCurrentUser(user);
+          await loadUserData();
+        } catch (error) {
+          localStorage.removeItem('token');
+          navigate('/login');
         }
-        
-        if (dbLocations.length > 0) {
-          setLocations(dbLocations);
-        }
-
-        if (dbTransactions.length > 0) {
-          setTransactions(dbTransactions);
-        }
-      } catch (error) {
-        console.error('Failed to initialize IndexedDB:', error);
+      } else {
+        navigate('/login');
       }
+      setLoading(false);
     };
-
-    initializeApp();
+    checkAuth();
   }, []);
-
-  // Sync items to IndexedDB whenever they change
-  useEffect(() => {
-    const syncItems = async () => {
-      try {
-        await saveItems(items);
-      } catch (error) {
-        console.error('Failed to sync items to IndexedDB:', error);
-      }
-    };
-    syncItems();
-  }, [items]);
-
-  // Sync transactions to IndexedDB whenever they change
-  useEffect(() => {
-    const syncTransactions = async () => {
-      try {
-        await saveTransactions(transactions);
-      } catch (error) {
-        console.error('Failed to sync transactions to IndexedDB:', error);
-      }
-    };
-    syncTransactions();
-  }, [transactions]);
-
-  // Get current page from URL
+  
+  const loadUserData = async () => {
+    try {
+      const [itemsData, locationsData, transactionsData] = await Promise.all([
+        apiService.getItems(),
+        apiService.getLocations(),
+        apiService.getTransactions()
+      ]);
+      setItems(itemsData);
+      setLocations(locationsData);
+      setTransactions(transactionsData);
+      
+      // Extract categories from items
+      const uniqueCategories = [...new Set(itemsData.map(item => item.category))];
+      setCategories(uniqueCategories);
+    } catch (error) {
+      console.error('Failed to load user data:', error);
+    }
+  };
+  
   const getCurrentPage = (): Page => {
     const path = location.pathname;
+    if (path === '/login') return Page.LOGIN;
     if (path === '/inventory') return Page.INVENTORY;
     if (path === '/scanner') return Page.SCANNER;
     if (path === '/locations') return Page.LOCATIONS;
@@ -89,10 +79,10 @@ const App: React.FC = () => {
     if (path === '/add-item' || path.startsWith('/edit-item/')) return Page.ITEM_FORM;
     return Page.DASHBOARD;
   };
-
+  
   const currentPage = getCurrentPage();
-
-  const navigateTo = (page: Page, itemId?: string) => {
+  
+  const navigateTo = (page: Page, itemId ? : string) => {
     if (page === Page.DASHBOARD) navigate('/');
     else if (page === Page.INVENTORY) navigate('/inventory');
     else if (page === Page.SCANNER) navigate('/scanner');
@@ -100,6 +90,7 @@ const App: React.FC = () => {
     else if (page === Page.REPORTS) navigate('/report');
     else if (page === Page.ITEM_DETAIL && itemId) navigate(`/item/${itemId}`);
     else if (page === Page.ITEM_FORM) navigate('/add-item');
+    else if (page === Page.LOGIN) navigate('/login');
     
     setSelectedItemId(itemId || null);
     setItemToEdit(null);
@@ -107,16 +98,41 @@ const App: React.FC = () => {
     setFromScanner(false);
   };
   
+  const handleLogin = async (email: string, password: string) => {
+    const response = await apiService.login(email, password);
+    localStorage.setItem('token', response.token);
+    setCurrentUser(response.user);
+    await loadUserData();
+    navigate('/');
+  };
+  
+  const handleRegister = async (userData: { email: string;password: string;name: string }) => {
+    const response = await apiService.register(userData);
+    localStorage.setItem('token', response.token);
+    setCurrentUser(response.user);
+    await loadUserData();
+    navigate('/');
+  };
+  
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    setCurrentUser(null);
+    setItems([]);
+    setLocations([]);
+    setTransactions([]);
+    navigate('/login');
+  };
+  
   const handleViewItem = (itemId: string) => {
     setSelectedItemId(itemId);
     navigate(`/item/${itemId}`);
   };
-
+  
   const handleEditItem = (item: Item) => {
     setItemToEdit(item);
     navigate(`/edit-item/${item.id}`);
   };
-
+  
   const handleAddNewItem = () => {
     setItemToEdit(null);
     setScannedSku(null);
@@ -131,55 +147,87 @@ const App: React.FC = () => {
     navigate('/add-item');
   };
   
-  const handleDeleteItem = (itemId: string) => {
+  const handleDeleteItem = async (itemId: string) => {
     if (window.confirm('Are you sure you want to delete this item?')) {
+      try {
+        await apiService.deleteItem(itemId);
         setItems(prev => prev.filter(item => item.id !== itemId));
         setTransactions(prev => prev.filter(t => t.itemId !== itemId));
         if (currentPage === Page.ITEM_DETAIL) {
-            navigate('/inventory');
+          navigate('/inventory');
         }
+      } catch (error) {
+        alert('Failed to delete item');
+      }
     }
   };
-
-  const saveItem = (itemData: Omit<Item, 'id'> & { id?: string }) => {
-    if (itemData.id) {
-        setItems(prev => prev.map(item => item.id === itemData.id ? { ...item, ...itemData } as Item : item));
-    } else {
-        const newItem: Item = { ...itemData, id: `item${Date.now()}`};
+  
+  const saveItem = async (itemData: Omit < Item, 'id' > & { id ? : string }) => {
+    try {
+      if (itemData.id) {
+        const updatedItem = await apiService.updateItem(itemData.id, itemData);
+        setItems(prev => prev.map(item => item.id === itemData.id ? updatedItem : item));
+      } else {
+        const newItem = await apiService.createItem(itemData);
         setItems(prev => [...prev, newItem]);
+      }
+      navigate('/inventory');
+    } catch (error) {
+      alert('Failed to save item');
     }
-    navigate('/inventory');
   };
-
-  const updateStock = useCallback((sku: string, quantityChange: number, type: TransactionType, notes?: string) => {
-    const itemToUpdate = items.find(item => item.sku === sku);
-    if (!itemToUpdate) {
-        console.log('Item not found:', sku);
+  
+  const updateStock = useCallback(async (sku: string, quantityChange: number, type: TransactionType, notes ? : string) => {
+    try {
+      const itemToUpdate = items.find(item => item.sku === sku);
+      if (!itemToUpdate) {
         return false;
-    }
-    
-    setItems(prev => prev.map(item => 
-        item.sku === sku ? { ...item, quantity: item.quantity + quantityChange } : item
-    ));
-
-    const newTransaction: Transaction = {
-        id: `t${Date.now()}`,
+      }
+      
+      const updatedItem = await apiService.updateItem(itemToUpdate.id, {
+        quantity: itemToUpdate.quantity + quantityChange
+      });
+      
+      setItems(prev => prev.map(item =>
+        item.id === itemToUpdate.id ? updatedItem : item
+      ));
+      
+      const newTransaction = await apiService.createTransaction({
         itemId: itemToUpdate.id,
         type,
-        quantityChange: quantityChange,
-        timestamp: new Date().toISOString(),
+        quantityChange,
         notes,
-    };
-    setTransactions(prev => [newTransaction, ...prev]);
-    return true;
+        timestamp: new Date().toISOString(),
+      });
+      
+      setTransactions(prev => [newTransaction, ...prev]);
+      return true;
+    } catch (error) {
+      console.error('Failed to update stock:', error);
+      return false;
+    }
   }, [items]);
-
+  
   const selectedItem = useMemo(() => {
     return items.find(item => item.id === selectedItemId) || null;
   }, [items, selectedItemId]);
-
+  
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-100 dark:bg-gray-900 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+      </div>
+    );
+  }
+  
+  if (!currentUser && currentPage !== Page.LOGIN) {
+    return <Login onLogin={handleLogin} onNavigateToRegister={() => navigate('/register')} />;
+  }
+  
   const renderContent = () => {
     switch (currentPage) {
+      case Page.LOGIN:
+        return <Login onLogin={handleLogin} onNavigateToRegister={() => navigate('/register')} />;
       case Page.DASHBOARD:
         return <Dashboard items={items} transactions={transactions} onNavigate={navigateTo} />;
       case Page.INVENTORY:
@@ -209,10 +257,10 @@ const App: React.FC = () => {
         return <Dashboard items={items} transactions={transactions} onNavigate={navigateTo} />;
     }
   };
-
+  
   return (
-    <div className="min-h-screen text-gray-800 dark:text-gray-200">
-      <Header onNavigate={navigateTo} />
+    <div className="min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200">
+      {currentUser && <Header onNavigate={navigateTo} user={currentUser} onLogout={handleLogout} />}
       <main className="p-4 sm:p-6 lg:p-8">
         {renderContent()}
       </main>
