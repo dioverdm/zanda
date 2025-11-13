@@ -31,7 +31,7 @@ const Header: React.FC<HeaderProps> = ({ onNavigate, user, onLogout }) => {
             <div className="logo-icon">
               {/*<Package className="icon" />*/}
               <img
-              src="../public/img/logo.png"
+              src="https://i.ibb.co/xK31x3GC/Generated-Image-October-16-2025-11-07-PM.png"
               alt="LiquidPOS Logo"
               className="logo-image" 
               />
