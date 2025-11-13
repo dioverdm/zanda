@@ -29,7 +29,12 @@ const Header: React.FC<HeaderProps> = ({ onNavigate, user, onLogout }) => {
         <div className="header-content">
           <div className="logo-section">
             <div className="logo-icon">
-              <Package className="icon" />
+              {/*<Package className="icon" />*/}
+              <img
+              src="../public/img/logo.png"
+              alt="LiquidPOS Logo"
+              className="logo-image" 
+              />
             </div>
             <div className="logo-text">
               <h1>LiquidPOS</h1>
@@ -127,6 +132,12 @@ const Header: React.FC<HeaderProps> = ({ onNavigate, user, onLogout }) => {
           width: 20px;
           height: 20px;
           color: white;
+        }
+        
+        .logo-image {
+          width: 24px;
+          height: 24px;
+          object-fit: contain;
         }
 
         .logo-text h1 {
