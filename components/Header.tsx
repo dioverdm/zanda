@@ -337,7 +337,7 @@ const Header: React.FC<HeaderProps> = ({ onNavigate, user, onLogout }) => {
   .notifications-menu {
     position: absolute;
     top: 100%;
-    right: 50%;
+    right: 100%;
     transform: translateX(50%);
     margin-top: 8px;
     background: white;
