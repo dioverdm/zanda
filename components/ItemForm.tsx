@@ -111,98 +111,98 @@ const ItemForm: React.FC<ItemFormProps> = ({ itemToEdit, locations, scannedSku, 
   }, [item.sku, showQRGenerator]);
 
   return (
-    <div className="max-w-4xl mx-auto bg-white dark:bg-gray-800 p-8 rounded-lg shadow-md">
-      <h1 className="text-2xl font-bold mb-6">{itemToEdit ? 'Edit Item' : 'Add New Item'}</h1>
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div className="form-container">
+      <h1 className="form-title">{itemToEdit ? 'Edit Item' : 'Add New Item'}</h1>
+      <form onSubmit={handleSubmit} className="form">
+        <div className="form-grid">
           {/* Item Name */}
-          <div>
-            <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Item Name</label>
-            <input type="text" id="name" name="name" value={item.name} onChange={handleChange} required className="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 px-3 py-2" />
+          <div className="form-field">
+            <label htmlFor="name" className="form-label">Item Name</label>
+            <input type="text" id="name" name="name" value={item.name} onChange={handleChange} required className="form-input" />
           </div>
 
           {/* SKU */}
-          <div>
-            <label htmlFor="sku" className="block text-sm font-medium text-gray-700 dark:text-gray-300">SKU (Stock Keeping Unit)</label>
-            <div className="flex gap-2">
-              <input type="text" id="sku" name="sku" value={item.sku} onChange={handleChange} required disabled={fromScanner} className="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 px-3 py-2 disabled:opacity-50" />
+          <div className="form-field">
+            <label htmlFor="sku" className="form-label">SKU (Stock Keeping Unit)</label>
+            <div className="input-with-button">
+              <input type="text" id="sku" name="sku" value={item.sku} onChange={handleChange} required disabled={fromScanner} className="form-input disabled" />
             </div>
           </div>
 
           {/* Category */}
-          <div>
-            <label htmlFor="category" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Category</label>
-            <select id="category" name="category" value={item.category} onChange={handleChange} required className="mt-1 block w-full pl-3 pr-10 py-2 text-base border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md bg-white dark:bg-gray-700">
+          <div className="form-field">
+            <label htmlFor="category" className="form-label">Category</label>
+            <select id="category" name="category" value={item.category} onChange={handleChange} required className="form-select">
               <option value="" disabled>Select a category</option>
               {categories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
             </select>
           </div>
 
           {/* Location */}
-          <div>
-            <label htmlFor="locationId" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Location</label>
-            <select id="locationId" name="locationId" value={item.locationId} onChange={handleChange} required className="mt-1 block w-full pl-3 pr-10 py-2 text-base border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md bg-white dark:bg-gray-700">
+          <div className="form-field">
+            <label htmlFor="locationId" className="form-label">Location</label>
+            <select id="locationId" name="locationId" value={item.locationId} onChange={handleChange} required className="form-select">
               <option value="" disabled>Select a location</option>
               {locations.map(loc => <option key={loc.id} value={loc.id}>{loc.name}</option>)}
             </select>
           </div>
 
           {/* Quantity */}
-          <div>
-            <label htmlFor="quantity" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Initial Quantity</label>
-            <input type="number" id="quantity" name="quantity" value={item.quantity} onChange={handleChange} required className="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 px-3 py-2" />
+          <div className="form-field">
+            <label htmlFor="quantity" className="form-label">Initial Quantity</label>
+            <input type="number" id="quantity" name="quantity" value={item.quantity} onChange={handleChange} required className="form-input" />
           </div>
 
           {/* Minimum Stock Level */}
-          <div>
-            <label htmlFor="minStock" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Minimum Stock Level</label>
-            <input type="number" id="minStock" name="minStock" value={item.minStock} onChange={handleChange} required className="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 px-3 py-2" />
+          <div className="form-field">
+            <label htmlFor="minStock" className="form-label">Minimum Stock Level</label>
+            <input type="number" id="minStock" name="minStock" value={item.minStock} onChange={handleChange} required className="form-input" />
           </div>
         </div>
 
         {/* Description */}
-        <div>
-          <label htmlFor="description" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Description</label>
-          <textarea id="description" name="description" value={item.description} onChange={handleChange} rows={3} className="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 px-3 py-2"></textarea>
+        <div className="form-field">
+          <label htmlFor="description" className="form-label">Description</label>
+          <textarea id="description" name="description" value={item.description} onChange={handleChange} rows={3} className="form-textarea"></textarea>
         </div>
 
         {/* Image URL */}
-        <div>
-          <label htmlFor="imageUrl" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Image URL</label>
-          <input type="text" id="imageUrl" name="imageUrl" value={item.imageUrl} onChange={handleChange} className="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 px-3 py-2" />
+        <div className="form-field">
+          <label htmlFor="imageUrl" className="form-label">Image URL</label>
+          <input type="text" id="imageUrl" name="imageUrl" value={item.imageUrl} onChange={handleChange} className="form-input" />
         </div>
 
-        {/* QR Code Generator - Only show if not from scanner and item is new */}
+        {/* QR Code Generator */}
         {!fromScanner && !itemToEdit && (
-          <div className="p-4 border-2 border-dashed border-indigo-300 dark:border-indigo-600 rounded-lg bg-indigo-50 dark:bg-indigo-900/20">
+          <div className="qr-section">
             <button 
               type="button"
               onClick={() => setShowQRGenerator(!showQRGenerator)}
-              className="w-full bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 font-semibold mb-4"
+              className="qr-toggle-btn"
             >
               {showQRGenerator ? 'Hide' : 'Generate'} QR Code
             </button>
             
             {showQRGenerator && qrCode && (
-              <div className="space-y-4">
-                <div className="flex justify-center">
-                  <img src={qrCode} alt="QR Code" className="w-64 h-64 border-2 border-gray-300 p-2 bg-white rounded" />
+              <div className="qr-content">
+                <div className="qr-image-container">
+                  <img src={qrCode} alt="QR Code" className="qr-image" />
                 </div>
-                <div className="text-center text-sm text-gray-600 dark:text-gray-400">
-                  <p>SKU: <span className="font-mono font-bold">{item.sku}</span></p>
+                <div className="qr-info">
+                  <p>SKU: <span className="sku-value">{item.sku}</span></p>
                 </div>
-                <div className="flex gap-2">
+                <div className="qr-actions">
                   <button 
                     type="button"
                     onClick={downloadQRCode}
-                    className="flex-1 bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700"
+                    className="qr-action-btn download"
                   >
                     Download
                   </button>
                   <button 
                     type="button"
                     onClick={printQRCode}
-                    className="flex-1 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+                    className="qr-action-btn print"
                   >
                     Print
                   </button>
@@ -212,15 +212,226 @@ const ItemForm: React.FC<ItemFormProps> = ({ itemToEdit, locations, scannedSku, 
           </div>
         )}
 
-        <div className="flex justify-end gap-4 pt-4">
-          <button type="button" onClick={onCancel} className="bg-gray-200 dark:bg-gray-600 text-gray-800 dark:text-gray-200 px-4 py-2 rounded-md hover:bg-gray-300 dark:hover:bg-gray-500">
+        <div className="form-actions">
+          <button type="button" onClick={onCancel} className="btn-secondary">
             Cancel
           </button>
-          <button type="submit" className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700">
+          <button type="submit" className="btn-primary">
             Save Item
           </button>
         </div>
       </form>
+
+      <style jsx>{`
+        .form-container {
+          max-width: 800px;
+          margin: 0 auto;
+          background: var(--glass-bg);
+          backdrop-filter: blur(10px);
+          border-radius: 20px;
+          padding: 25px;
+          box-shadow: var(--shadow);
+          border: 1px solid var(--glass-border);
+        }
+
+        .form-title {
+          font-size: 1.8rem;
+          font-weight: 700;
+          margin-bottom: 25px;
+          color: var(--dark);
+          text-align: center;
+        }
+
+        .form {
+          space-y: 25px;
+        }
+
+        .form-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 20px;
+        }
+
+        .form-field {
+          display: flex;
+          flex-direction: column;
+        }
+
+        .form-label {
+          font-size: 0.9rem;
+          font-weight: 500;
+          color: var(--dark);
+          margin-bottom: 8px;
+        }
+
+        .form-input, .form-select, .form-textarea {
+          padding: 12px 15px;
+          border: 1px solid rgba(0, 0, 0, 0.1);
+          border-radius: 12px;
+          background: white;
+          font-size: 0.9rem;
+          transition: var(--transition);
+          box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .form-input:focus, .form-select:focus, .form-textarea:focus {
+          outline: none;
+          border-color: var(--primary);
+          box-shadow: 0 0 0 3px rgba(107, 0, 255, 0.1);
+        }
+
+        .form-input.disabled {
+          opacity: 0.6;
+          background: #f8f9fa;
+        }
+
+        .form-textarea {
+          resize: vertical;
+          min-height: 100px;
+        }
+
+        .input-with-button {
+          display: flex;
+          gap: 10px;
+        }
+
+        .qr-section {
+          padding: 20px;
+          border: 2px dashed var(--primary);
+          border-radius: 15px;
+          background: rgba(107, 0, 255, 0.05);
+        }
+
+        .qr-toggle-btn {
+          width: 100%;
+          background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+          color: white;
+          padding: 12px 20px;
+          border-radius: 12px;
+          border: none;
+          font-weight: 600;
+          cursor: pointer;
+          transition: var(--transition);
+          margin-bottom: 15px;
+        }
+
+        .qr-toggle-btn:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 5px 15px rgba(107, 0, 255, 0.3);
+        }
+
+        .qr-content {
+          space-y: 15px;
+        }
+
+        .qr-image-container {
+          display: flex;
+          justify-content: center;
+        }
+
+        .qr-image {
+          width: 200px;
+          height: 200px;
+          border: 2px solid rgba(0, 0, 0, 0.1);
+          padding: 10px;
+          background: white;
+          border-radius: 10px;
+        }
+
+        .qr-info {
+          text-align: center;
+          font-size: 0.85rem;
+          color: var(--text-light);
+        }
+
+        .sku-value {
+          font-family: monospace;
+          font-weight: 700;
+          color: var(--dark);
+        }
+
+        .qr-actions {
+          display: flex;
+          gap: 10px;
+        }
+
+        .qr-action-btn {
+          flex: 1;
+          padding: 10px 15px;
+          border: none;
+          border-radius: 10px;
+          color: white;
+          font-weight: 500;
+          cursor: pointer;
+          transition: var(--transition);
+        }
+
+        .qr-action-btn.download {
+          background: var(--success);
+        }
+
+        .qr-action-btn.print {
+          background: var(--primary);
+        }
+
+        .qr-action-btn:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .form-actions {
+          display: flex;
+          justify-content: flex-end;
+          gap: 15px;
+          padding-top: 20px;
+          border-top: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-primary, .btn-secondary {
+          padding: 12px 25px;
+          border: none;
+          border-radius: 12px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: var(--transition);
+        }
+
+        .btn-primary {
+          background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+          color: white;
+        }
+
+        .btn-primary:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 5px 15px rgba(107, 0, 255, 0.3);
+        }
+
+        .btn-secondary {
+          background: rgba(0, 0, 0, 0.05);
+          color: var(--text);
+        }
+
+        .btn-secondary:hover {
+          background: rgba(0, 0, 0, 0.1);
+          transform: translateY(-1px);
+        }
+
+        @media (max-width: 768px) {
+          .form-grid {
+            grid-template-columns: 1fr;
+            gap: 15px;
+          }
+          
+          .form-container {
+            padding: 20px 15px;
+            margin: 0 10px;
+          }
+          
+          .qr-actions {
+            flex-direction: column;
+          }
+        }
+      `}</style>
     </div>
   );
 };
