@@ -37,8 +37,8 @@ const Header: React.FC<HeaderProps> = ({ onNavigate, user, onLogout }) => {
   const navItems = [
     { path: '/', label: 'Inicio', icon: Home },
     { path: '/inventory', label: 'Inventario', icon: Package },
-    { path: '/reports', label: 'Reportes', icon: BarChart3 },
-    { path: '/settings', label: 'Ajustes', icon: Settings },
+    { path: '/report', label: 'Reportes', icon: BarChart3 },
+    { path: '/locations', label: 'Ajustes', icon: Settings },
   ];
 
   // Cerrar menús al hacer click fuera
