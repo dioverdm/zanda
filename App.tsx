@@ -315,14 +315,24 @@ const App: React.FC = () => {
             onNavigateToForm={handleAddItemFromScanner} 
           />
         );
+      //case Page.LOCATIONS:
+      //  return (
+      //    <LocationsPage 
+      //      locations={locations} 
+      //      setLocations={setLocations}
+      //      categories={categories} 
+      //      setCategories={setCategories} 
+      //    />
+      //  );
       case Page.LOCATIONS:
         return (
-          <LocationsPage 
-            locations={locations} 
-            setLocations={setLocations} 
-            categories={categories} 
-            setCategories={setCategories} 
-          />
+        <LocationsPage 
+        locations={locations} 
+        setLocations={setLocations} 
+        categories={categories} 
+        setCategories={setCategories}
+        onNavigate={navigateTo}
+        />
         );
       case Page.REPORTS:
         return <ReportsPage transactions={transactions} items={items} />;
