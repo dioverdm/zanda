@@ -126,7 +126,7 @@ const ScannerPage: React.FC<ScannerPageProps> = ({ onStockUpdate, onNavigateToDe
     try {
       const config = { 
         fps: 10, 
-        qrbox: { width: 250, height: 250 },
+        qrbox: { width: 250, height: 250 }, // Cuadrado para QR
         disableFlip: false
       };
 
@@ -286,32 +286,35 @@ const ScannerPage: React.FC<ScannerPageProps> = ({ onStockUpdate, onNavigateToDe
         </div>
       )}
 
-      <div id="qr-reader" ref={readerRef} className="scanner-view">
-        {cameraError && (
-          <div className="error-container">
-            <p className="error-title">⚠️ Camera Error</p>
-            <p className="error-message">{cameraError}</p>
-            <div className="error-actions">
-              <button 
-                onClick={handleRetry}
-                className="error-btn retry"
-              >
-                Retry
-              </button>
-              <button 
-                onClick={() => window.location.reload()} 
-                className="error-btn refresh"
-              >
-                Refresh Page
-              </button>
+      <div className="scanner-wrapper">
+        <div id="qr-reader" ref={readerRef} className="scanner-view">
+          {cameraError && (
+            <div className="error-container">
+              <p className="error-title">⚠️ Camera Error</p>
+              <p className="error-message">{cameraError}</p>
+              <div className="error-actions">
+                <button 
+                  onClick={handleRetry}
+                  className="error-btn retry"
+                >
+                  Retry
+                </button>
+                <button 
+                  onClick={() => window.location.reload()} 
+                  className="error-btn refresh"
+                >
+                  Refresh Page
+                </button>
+              </div>
             </div>
-          </div>
-        )}
-        {isInitializing && !cameraError && (
-          <div className="loading-message">
-            <p>Loading camera...</p>
-          </div>
-        )}
+          )}
+          {isInitializing && !cameraError && (
+            <div className="loading-message">
+              <div className="spinner"></div>
+              <p>Loading camera...</p>
+            </div>
+          )}
+        </div>
       </div>
 
       {message && (
@@ -369,7 +372,7 @@ const ScannerPage: React.FC<ScannerPageProps> = ({ onStockUpdate, onNavigateToDe
 
       <style jsx>{`
         .scanner-container {
-          max-width: 600px;
+          max-width: 500px;
           margin: 0 auto;
           background: var(--glass-bg);
           backdrop-filter: blur(10px);
@@ -440,16 +443,38 @@ const ScannerPage: React.FC<ScannerPageProps> = ({ onStockUpdate, onNavigateToDe
           cursor: pointer;
         }
 
+        .scanner-wrapper {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          padding: 10px;
+        }
+
         .scanner-view {
-          width: 100%;
+          width: 300px;
           height: 300px;
-          border: 3px dashed rgba(0, 0, 0, 0.2);
-          border-radius: 15px;
+          border: 3px dashed rgba(107, 0, 255, 0.3);
+          border-radius: 20px;
           overflow: hidden;
           display: flex;
           align-items: center;
           justify-content: center;
-          background: rgba(0, 0, 0, 0.02);
+          background: rgba(107, 0, 255, 0.05);
+          position: relative;
+          box-shadow: 0 8px 25px rgba(107, 0, 255, 0.1);
+        }
+
+        /* Efecto de marco para el área de escaneo */
+        .scanner-view::before {
+          content: '';
+          position: absolute;
+          top: 20px;
+          left: 20px;
+          right: 20px;
+          bottom: 20px;
+          border: 2px solid var(--primary);
+          border-radius: 15px;
+          pointer-events: none;
         }
 
         .error-container {
@@ -457,6 +482,7 @@ const ScannerPage: React.FC<ScannerPageProps> = ({ onStockUpdate, onNavigateToDe
           padding: 20px;
           color: var(--danger);
           space-y: 15px;
+          width: 100%;
         }
 
         .error-title {
@@ -468,6 +494,7 @@ const ScannerPage: React.FC<ScannerPageProps> = ({ onStockUpdate, onNavigateToDe
         .error-message {
           font-size: 0.9rem;
           margin-bottom: 15px;
+          line-height: 1.4;
         }
 
         .error-actions {
@@ -497,34 +524,42 @@ const ScannerPage: React.FC<ScannerPageProps> = ({ onStockUpdate, onNavigateToDe
 
         .error-btn:hover {
           transform: translateY(-2px);
+          box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
         }
 
         .loading-message {
-          text-align: center;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 10px;
           color: var(--text-light);
+          text-align: center;
         }
 
         .message {
           padding: 15px;
           border-radius: 12px;
           font-weight: 500;
+          text-align: center;
         }
 
         .message.success {
           background: rgba(0, 200, 83, 0.1);
           color: var(--success);
+          border: 1px solid rgba(0, 200, 83, 0.2);
         }
 
         .message.error {
           background: rgba(244, 67, 54, 0.1);
           color: var(--danger);
+          border: 1px solid rgba(244, 67, 54, 0.2);
         }
 
         .add-item-btn {
           width: 100%;
           margin-top: 10px;
           padding: 10px 15px;
-          background: var(--primary);
+          background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
           color: white;
           border: none;
           border-radius: 8px;
@@ -534,8 +569,8 @@ const ScannerPage: React.FC<ScannerPageProps> = ({ onStockUpdate, onNavigateToDe
         }
 
         .add-item-btn:hover {
-          background: var(--secondary);
           transform: translateY(-1px);
+          box-shadow: 0 3px 10px rgba(107, 0, 255, 0.3);
         }
 
         .mode-selector {
@@ -569,17 +604,23 @@ const ScannerPage: React.FC<ScannerPageProps> = ({ onStockUpdate, onNavigateToDe
           border-radius: 15px;
           background: white;
           space-y: 15px;
+          box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
         }
 
         .scan-sku {
           font-weight: 600;
           text-align: center;
           color: var(--dark);
+          font-size: 1rem;
         }
 
         .sku-value {
           font-family: monospace;
           color: var(--primary);
+          background: rgba(107, 0, 255, 0.1);
+          padding: 4px 8px;
+          border-radius: 6px;
+          font-size: 0.9rem;
         }
 
         .quantity-control {
@@ -592,6 +633,7 @@ const ScannerPage: React.FC<ScannerPageProps> = ({ onStockUpdate, onNavigateToDe
           font-weight: 500;
           color: var(--dark);
           min-width: 80px;
+          font-size: 0.9rem;
         }
 
         .quantity-input {
@@ -601,6 +643,7 @@ const ScannerPage: React.FC<ScannerPageProps> = ({ onStockUpdate, onNavigateToDe
           border-radius: 8px;
           background: white;
           font-size: 1rem;
+          text-align: center;
         }
 
         .result-actions {
@@ -620,6 +663,7 @@ const ScannerPage: React.FC<ScannerPageProps> = ({ onStockUpdate, onNavigateToDe
           font-weight: 600;
           cursor: pointer;
           transition: var(--transition);
+          font-size: 0.9rem;
         }
 
         .action-btn.primary {
@@ -649,7 +693,8 @@ const ScannerPage: React.FC<ScannerPageProps> = ({ onStockUpdate, onNavigateToDe
           }
           
           .scanner-view {
-            height: 250px;
+            width: 280px;
+            height: 280px;
           }
           
           .result-actions {
@@ -660,6 +705,18 @@ const ScannerPage: React.FC<ScannerPageProps> = ({ onStockUpdate, onNavigateToDe
             flex-direction: column;
             align-items: stretch;
             gap: 8px;
+          }
+          
+          .mode-selector {
+            flex-direction: column;
+            gap: 4px;
+          }
+        }
+
+        @media (max-width: 380px) {
+          .scanner-view {
+            width: 250px;
+            height: 250px;
           }
         }
       `}</style>
