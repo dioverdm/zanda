@@ -1,7 +1,7 @@
 import { Item, Location, Transaction, User } from '../types';
 
 // URL fija del backend externo (HTTP)
-const API_BASE_URL = 'http://dash.pogoos.xyz/api';
+const API_BASE_URL = '/api';
 
 class ApiService {
   private async request(endpoint: string, options: RequestInit = {}) {
