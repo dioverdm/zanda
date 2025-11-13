@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { Item, Location } from '../types';
 import { Search, Plus, Edit, Trash2, Eye, QrCode, Filter } from 'lucide-react';
 import QRCodeGenerator from './QRCodeGenerator';
+import '../public/css/inventoryList.css';
 
 interface InventoryListProps {
   items: Item[];

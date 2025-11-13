@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Item, Location, Transaction, TransactionType } from '../types';
 import { Edit, Trash2, QrCode, Plus, Minus, Package, MapPin, Tag, BarChart3 } from 'lucide-react';
 import QRCodeGenerator from './QRCodeGenerator';
+import '../public/css/itemDetail.css';
 
 interface ItemDetailProps {
   item: Item;

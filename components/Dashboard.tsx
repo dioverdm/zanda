@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { Item, Transaction, Page, TransactionType } from '../types';
 import { QrCode, Plus, List, BarChart3, Package, Archive, TrendingUp, TrendingDown, ShoppingCart } from 'lucide-react';
+import '../public/css/dashboard.css';
 
 interface DashboardProps {
   items: Item[];

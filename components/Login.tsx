@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Package, Eye, EyeOff, UserPlus } from 'lucide-react';
+import '../public/css/login.css';
 
 interface LoginProps {
   onLogin: (email: string, password: string) => Promise<void>;

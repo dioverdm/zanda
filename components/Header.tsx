@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Package, User, LogOut, Home, BarChart3, Users, Settings } from 'lucide-react';
 import { Page, User as UserType } from '../types';
+import '../public/css/header.css';
 
 interface HeaderProps {
   onNavigate: (page: Page) => void;

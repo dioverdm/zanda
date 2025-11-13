@@ -1,9 +1,3 @@
-@import url('./dashboard.css');
-@import url('./header.css');
-@import url('./inventoryList.css');
-@import url('./itemDetail.css');
-@import url('./login.css');
-
 /* Tus estilos CSS personalizados aquí */
 :root {
   --primary: #6B00FF;
