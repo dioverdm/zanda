@@ -388,19 +388,18 @@ const Header: React.FC<HeaderProps> = ({ onNavigate, user, onLogout }) => {
           position: relative;
         }
 
-        .notifications-menu {
-          position: absolute;
-          top: 100%;
-          right: 50%;
-          transform: translateX(50%);
-          margin-top: 8px;
-          background: white;
-          border-radius: 15px;
-          box-shadow: var(--shadow);
-          width: 350px;
-          max-height: 400px;
-          overflow-y: auto;
-          z-index: 1001;
+        .notifications - menu {
+        position: absolute;
+        top: 100%;
+        right: 0;
+        margin-top: 8 px;
+        background: white;
+        border-radius: 15px;
+        box-shadow: var(--shadow);
+        width: min(350px, calc(100vw - 40px));
+        max - height: 400px;
+        overflow-y: auto;
+        z-index: 1001;
         }
 
         .notifications-header {
@@ -638,9 +637,9 @@ const Header: React.FC<HeaderProps> = ({ onNavigate, user, onLogout }) => {
 
         @media (max-width: 768px) {
           .notifications-menu {
-            width: 300px;
-            right: 50%;
-            transform: translateX(50%);
+            right: 10px;
+            left: auto;
+            transform: none;
           }
           
           .logo-text h1 {
@@ -654,9 +653,9 @@ const Header: React.FC<HeaderProps> = ({ onNavigate, user, onLogout }) => {
 
         @media (max-width: 480px) {
           .notifications-menu {
-            width: 280px;
-            right: 50%;
-            transform: translateX(50%);
+            right: 10px;
+            left: auto;
+            width: min(300px, calc(100vw - 20px));
           }
         }
       `}</style>
