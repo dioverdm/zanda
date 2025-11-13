@@ -39,11 +39,22 @@ const InventoryList: React.FC<InventoryListProps> = ({ items, locations, onView,
     setItemForQR(item);
   };
 
-  const getStockStatus = (quantity: number, minStock: number) => {
-    if (quantity === 0) return { status: 'out-of-stock', label: 'Sin Stock', color: '#F44336' };
-    if (quantity <= minStock) return { status: 'low-stock', label: 'Bajo Stock', color: '#FF9800' };
-    return { status: 'in-stock', label: 'En Stock', color: '#00C853' };
-  };
+// const getStockStatus = (quantity: number, minStock: number) => {
+//    if (quantity === 0) return { status: 'out-of-stock', label: 'Sin Stock', color: '#F44336' };
+//    if (quantity <= minStock) return { status: 'low-stock', label: 'Bajo Stock', color: '#FF9800' };
+//    return { status: 'in-stock', label: 'En Stock', color: '#00C853' };
+//  };
+const getStockStatus = (quantity: number, minStock: number) => {
+  if (quantity === 0) {
+    return { status: 'out-of-stock', label: 'Sin Stock', color: '#F44336', priority: 3 };
+  } else if (quantity <= minStock) {
+    return { status: 'low-stock', label: 'Bajo Stock', color: '#FF9800', priority: 2 };
+  } else if (quantity <= minStock * 2) {
+    return { status: 'medium-stock', label: 'Stock Medio', color: '#FFC107', priority: 1 };
+  } else {
+    return { status: 'in-stock', label: 'En Stock', color: '#00C853', priority: 0 };
+  }
+};
 
   return (
     <div className="inventory-container">

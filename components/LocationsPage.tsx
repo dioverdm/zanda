@@ -1,76 +1,114 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Location } from '../types';
 import { Plus, Edit, Trash2 } from 'lucide-react';
+import { apiService } from '../services/api';
 
 interface LocationsPageProps {
   locations: Location[];
   setLocations: React.Dispatch<React.SetStateAction<Location[]>>;
-  categories?: string[];
-  setCategories?: React.Dispatch<React.SetStateAction<string[]>>;
+  categories: string[];
+  setCategories: React.Dispatch<React.SetStateAction<string[]>>;
 }
 
-const LocationsPage: React.FC<LocationsPageProps> = ({ locations, setLocations, categories: initialCategories = [], setCategories: setInitialCategories }) => {
+const LocationsPage: React.FC<LocationsPageProps> = ({ locations, setLocations, categories, setCategories }) => {
   const [newLocationName, setNewLocationName] = useState('');
   const [editingLocation, setEditingLocation] = useState<Location | null>(null);
-  const [categories, setCategories] = useState<string[]>(initialCategories);
   const [newCategory, setNewCategory] = useState('');
   const [editingCategory, setEditingCategory] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
-  const handleAddLocation = (e: React.FormEvent) => {
+  // Cargar categorías del backend
+  useEffect(() => {
+    loadCategories();
+  }, []);
+
+  const loadCategories = async () => {
+    try {
+      const categoriesData = await apiService.getCategories();
+      setCategories(categoriesData);
+    } catch (error) {
+      console.error('Error loading categories:', error);
+      alert('Error al cargar las categorías');
+    }
+  };
+
+  const handleAddLocation = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (newLocationName.trim()) {
-      const newLocation: Location = {
-        id: `loc${Date.now()}`,
+    if (!newLocationName.trim()) return;
+
+    setLoading(true);
+    try {
+      const newLocation = await apiService.createLocation({
         name: newLocationName.trim(),
-      };
+        description: ''
+      });
       setLocations(prev => [...prev, newLocation]);
       setNewLocationName('');
+    } catch (error) {
+      console.error('Error adding location:', error);
+      alert('Error al agregar la ubicación');
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleDeleteLocation = (id: string) => {
-    if (window.confirm('Are you sure you want to delete this location?')) {
+  const handleDeleteLocation = async (id: string) => {
+    if (!window.confirm('¿Estás seguro de que quieres eliminar esta ubicación?')) return;
+
+    try {
+      await apiService.deleteLocation(id);
       setLocations(prev => prev.filter(loc => loc.id !== id));
+    } catch (error: any) {
+      alert(error.message || 'Error al eliminar la ubicación');
     }
   };
 
-  const handleUpdateLocation = () => {
-    if (editingLocation && editingLocation.name.trim()) {
-      setLocations(prev => prev.map(loc => loc.id === editingLocation.id ? editingLocation : loc));
+  const handleUpdateLocation = async () => {
+    if (!editingLocation || !editingLocation.name.trim()) return;
+
+    try {
+      const updatedLocation = await apiService.updateLocation(editingLocation.id, {
+        name: editingLocation.name.trim()
+      });
+      setLocations(prev => prev.map(loc => loc.id === editingLocation.id ? updatedLocation : loc));
       setEditingLocation(null);
+    } catch (error) {
+      console.error('Error updating location:', error);
+      alert('Error al actualizar la ubicación');
     }
   };
 
-  const handleAddCategory = (e: React.FormEvent) => {
+  const handleAddCategory = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (newCategory.trim() && !categories.includes(newCategory.trim())) {
-      const updatedCategories = [...categories, newCategory.trim()];
-      setCategories(updatedCategories);
-      if (setInitialCategories) {
-        setInitialCategories(updatedCategories);
-      }
-      setNewCategory('');
+    if (!newCategory.trim() || categories.includes(newCategory.trim())) return;
+
+    // Para agregar categoría, necesitamos crear un item o actualizar la lista
+    // Por ahora, solo actualizamos el estado local
+    setCategories(prev => [...prev, newCategory.trim()]);
+    setNewCategory('');
+  };
+
+  const handleDeleteCategory = async (category: string) => {
+    if (!window.confirm(`¿Estás seguro de que quieres eliminar la categoría "${category}"?`)) return;
+
+    try {
+      await apiService.deleteCategory(category);
+      setCategories(prev => prev.filter(cat => cat !== category));
+    } catch (error: any) {
+      alert(error.message || 'Error al eliminar la categoría');
     }
   };
 
-  const handleDeleteCategory = (category: string) => {
-    if (window.confirm(`¿Seguro que quieres eliminar la categoría "${category}"?`)) {
-      const updatedCategories = categories.filter(cat => cat !== category);
-      setCategories(updatedCategories);
-      if (setInitialCategories) {
-        setInitialCategories(updatedCategories);
-      }
-    }
-  };
+  const handleUpdateCategory = async (oldCategory: string, newName: string) => {
+    if (!newName.trim() || categories.includes(newName.trim())) return;
 
-  const handleUpdateCategory = (oldCategory: string, newName: string) => {
-    if (newName.trim() && !categories.includes(newName.trim())) {
-      const updatedCategories = categories.map(cat => cat === oldCategory ? newName.trim() : cat);
-      setCategories(updatedCategories);
-      if (setInitialCategories) {
-        setInitialCategories(updatedCategories);
-      }
+    try {
+      await apiService.updateCategory(oldCategory, newName.trim());
+      setCategories(prev => prev.map(cat => cat === oldCategory ? newName.trim() : cat));
       setEditingCategory(null);
+    } catch (error) {
+      console.error('Error updating category:', error);
+      alert('Error al actualizar la categoría');
     }
   };
 
@@ -79,21 +117,22 @@ const LocationsPage: React.FC<LocationsPageProps> = ({ locations, setLocations, 
       <div className="grid-layout">
         {/* Locations Section */}
         <div className="management-card">
-          <h1 className="card-title">Gestionar ubicaciones</h1>
+          <h1 className="card-title">Gestionar Ubicaciones</h1>
           <form onSubmit={handleAddLocation} className="add-form">
             <input
               type="text"
               value={newLocationName}
               onChange={(e) => setNewLocationName(e.target.value)}
-              placeholder="Nuevo nombre de ubicación (p. ej., Almacén C - Bahía 4)"
+              placeholder="Nuevo nombre de ubicación"
               className="form-input"
+              disabled={loading}
             />
-            <button type="submit" className="add-btn primary">
-              <Plus className="icon" /> Agregar
+            <button type="submit" className="add-btn primary" disabled={loading}>
+              <Plus className="icon" /> {loading ? 'Agregando...' : 'Agregar'}
             </button>
           </form>
 
-          <h2 className="section-title">Ubicaciones existentes</h2>
+          <h2 className="section-title">Ubicaciones Existentes</h2>
           <ul className="list-container">
             {locations.map(location => (
               <li key={location.id} className="list-item">
@@ -128,13 +167,13 @@ const LocationsPage: React.FC<LocationsPageProps> = ({ locations, setLocations, 
 
         {/* Categories Section */}
         <div className="management-card">
-          <h1 className="card-title">Gestionar categorías</h1>
+          <h1 className="card-title">Gestionar Categorías</h1>
           <form onSubmit={handleAddCategory} className="add-form">
             <input
               type="text"
               value={newCategory}
               onChange={(e) => setNewCategory(e.target.value)}
-              placeholder="Nombre de la nueva categoría (p. ej., Electrónica)"
+              placeholder="Nueva categoría"
               className="form-input"
             />
             <button type="submit" className="add-btn success">
@@ -142,7 +181,7 @@ const LocationsPage: React.FC<LocationsPageProps> = ({ locations, setLocations, 
             </button>
           </form>
 
-          <h2 className="section-title">Categorías existentes</h2>
+          <h2 className="section-title">Categorías Existentes</h2>
           <ul className="list-container">
             {categories.map(category => (
               <li key={category} className="list-item">
@@ -256,9 +295,15 @@ const LocationsPage: React.FC<LocationsPageProps> = ({ locations, setLocations, 
           background: linear-gradient(135deg, var(--success) 0%, #00E676 100%);
         }
 
-        .add-btn:hover {
+        .add-btn:hover:not(:disabled) {
           transform: translateY(-2px);
           box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .add-btn:disabled {
+          opacity: 0.6;
+          cursor: not-allowed;
+          transform: none;
         }
 
         .icon {
