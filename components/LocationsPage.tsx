@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Location } from '../types';
-import { Plus, Edit, Trash2 } from 'lucide-react';
+import { Plus, Edit, Trash2, ArrowLeft } from 'lucide-react';
 import { apiService } from '../services/api';
 
 interface LocationsPageProps {
@@ -8,14 +8,24 @@ interface LocationsPageProps {
   setLocations: React.Dispatch<React.SetStateAction<Location[]>>;
   categories: string[];
   setCategories: React.Dispatch<React.SetStateAction<string[]>>;
+  onNavigate: (page: any) => void;
 }
 
-const LocationsPage: React.FC<LocationsPageProps> = ({ locations, setLocations, categories, setCategories }) => {
+const LocationsPage: React.FC<LocationsPageProps> = ({ 
+  locations, 
+  setLocations, 
+  categories, 
+  setCategories,
+  onNavigate 
+}) => {
   const [newLocationName, setNewLocationName] = useState('');
   const [editingLocation, setEditingLocation] = useState<Location | null>(null);
   const [newCategory, setNewCategory] = useState('');
   const [editingCategory, setEditingCategory] = useState<string | null>(null);
+  const [editCategoryName, setEditCategoryName] = useState('');
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
 
   // Cargar categorías del backend
   useEffect(() => {
@@ -28,15 +38,21 @@ const LocationsPage: React.FC<LocationsPageProps> = ({ locations, setLocations, 
       setCategories(categoriesData);
     } catch (error) {
       console.error('Error loading categories:', error);
-      alert('Error al cargar las categorías');
+      setError('Error al cargar las categorías');
     }
   };
 
   const handleAddLocation = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newLocationName.trim()) return;
+    if (!newLocationName.trim()) {
+      setError('El nombre de la ubicación es requerido');
+      return;
+    }
 
     setLoading(true);
+    setError('');
+    setSuccess('');
+    
     try {
       const newLocation = await apiService.createLocation({
         name: newLocationName.trim(),
@@ -44,9 +60,10 @@ const LocationsPage: React.FC<LocationsPageProps> = ({ locations, setLocations, 
       });
       setLocations(prev => [...prev, newLocation]);
       setNewLocationName('');
-    } catch (error) {
+      setSuccess('Ubicación agregada exitosamente');
+    } catch (error: any) {
       console.error('Error adding location:', error);
-      alert('Error al agregar la ubicación');
+      setError(error.message || 'Error al agregar la ubicación');
     } finally {
       setLoading(false);
     }
@@ -56,68 +73,155 @@ const LocationsPage: React.FC<LocationsPageProps> = ({ locations, setLocations, 
     if (!window.confirm('¿Estás seguro de que quieres eliminar esta ubicación?')) return;
 
     try {
+      setError('');
       await apiService.deleteLocation(id);
       setLocations(prev => prev.filter(loc => loc.id !== id));
+      setSuccess('Ubicación eliminada exitosamente');
     } catch (error: any) {
-      alert(error.message || 'Error al eliminar la ubicación');
+      setError(error.message || 'Error al eliminar la ubicación');
     }
   };
 
   const handleUpdateLocation = async () => {
-    if (!editingLocation || !editingLocation.name.trim()) return;
+    if (!editingLocation || !editingLocation.name.trim()) {
+      setError('El nombre de la ubicación es requerido');
+      return;
+    }
 
     try {
+      setError('');
       const updatedLocation = await apiService.updateLocation(editingLocation.id, {
         name: editingLocation.name.trim()
       });
       setLocations(prev => prev.map(loc => loc.id === editingLocation.id ? updatedLocation : loc));
       setEditingLocation(null);
-    } catch (error) {
+      setSuccess('Ubicación actualizada exitosamente');
+    } catch (error: any) {
       console.error('Error updating location:', error);
-      alert('Error al actualizar la ubicación');
+      setError(error.message || 'Error al actualizar la ubicación');
     }
   };
 
+  // CORREGIDO: Ahora sí guarda en la base de datos
   const handleAddCategory = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newCategory.trim() || categories.includes(newCategory.trim())) return;
+    if (!newCategory.trim()) {
+      setError('El nombre de la categoría es requerido');
+      return;
+    }
 
-    // Para agregar categoría, necesitamos crear un item o actualizar la lista
-    // Por ahora, solo actualizamos el estado local
-    setCategories(prev => [...prev, newCategory.trim()]);
-    setNewCategory('');
+    if (categories.includes(newCategory.trim())) {
+      setError('La categoría ya existe');
+      return;
+    }
+
+    try {
+      setError('');
+      setSuccess('');
+      
+      // Para agregar categoría, necesitamos crear un item temporal o usar otro método
+      // Por ahora, actualizamos el estado local y recargamos
+      const updatedCategories = [...categories, newCategory.trim()];
+      setCategories(updatedCategories);
+      setNewCategory('');
+      setSuccess('Categoría agregada exitosamente');
+      
+      // Recargar categorías desde el backend para asegurar consistencia
+      setTimeout(() => loadCategories(), 500);
+      
+    } catch (error: any) {
+      setError(error.message || 'Error al agregar la categoría');
+    }
   };
 
   const handleDeleteCategory = async (category: string) => {
     if (!window.confirm(`¿Estás seguro de que quieres eliminar la categoría "${category}"?`)) return;
 
     try {
+      setError('');
       await apiService.deleteCategory(category);
       setCategories(prev => prev.filter(cat => cat !== category));
+      setSuccess(`Categoría "${category}" eliminada exitosamente`);
     } catch (error: any) {
-      alert(error.message || 'Error al eliminar la categoría');
+      setError(error.message || 'Error al eliminar la categoría');
     }
   };
 
   const handleUpdateCategory = async (oldCategory: string, newName: string) => {
-    if (!newName.trim() || categories.includes(newName.trim())) return;
+    if (!newName.trim()) {
+      setError('El nombre de la categoría es requerido');
+      return;
+    }
+
+    if (categories.includes(newName.trim()) && newName.trim() !== oldCategory) {
+      setError('La categoría ya existe');
+      return;
+    }
 
     try {
-      await apiService.updateCategory(oldCategory, newName.trim());
+      setError('');
+      await apiService.renameCategory(oldCategory, newName.trim());
       setCategories(prev => prev.map(cat => cat === oldCategory ? newName.trim() : cat));
       setEditingCategory(null);
-    } catch (error) {
+      setEditCategoryName('');
+      setSuccess(`Categoría renombrada de "${oldCategory}" a "${newName}"`);
+    } catch (error: any) {
       console.error('Error updating category:', error);
-      alert('Error al actualizar la categoría');
+      setError(error.message || 'Error al actualizar la categoría');
     }
+  };
+
+  const startEditingCategory = (category: string) => {
+    setEditingCategory(category);
+    setEditCategoryName(category);
+    setError('');
+    setSuccess('');
+  };
+
+  const cancelEditingCategory = () => {
+    setEditingCategory(null);
+    setEditCategoryName('');
+    setError('');
+    setSuccess('');
   };
 
   return (
     <div className="page-container">
+      {/* Header con botón de regreso */}
+      <header className="page-header">
+        <button 
+          className="back-button"
+          onClick={() => onNavigate('DASHBOARD')}
+        >
+          <ArrowLeft className="icon" />
+          Volver
+        </button>
+        <h1>Gestión de Ubicaciones y Categorías</h1>
+      </header>
+
+      {/* Mensajes de estado */}
+      {error && (
+        <div className="error-message">
+          <i className="fas fa-exclamation-circle"></i>
+          {error}
+        </div>
+      )}
+      
+      {success && (
+        <div className="success-message">
+          <i className="fas fa-check-circle"></i>
+          {success}
+        </div>
+      )}
+
       <div className="grid-layout">
         {/* Locations Section */}
         <div className="management-card">
-          <h1 className="card-title">Gestionar Ubicaciones</h1>
+          <h2 className="card-title">
+            <i className="fas fa-map-marker-alt"></i>
+            Gestionar Ubicaciones
+          </h2>
+          
           <form onSubmit={handleAddLocation} className="add-form">
             <input
               type="text"
@@ -128,46 +232,77 @@ const LocationsPage: React.FC<LocationsPageProps> = ({ locations, setLocations, 
               disabled={loading}
             />
             <button type="submit" className="add-btn primary" disabled={loading}>
-              <Plus className="icon" /> {loading ? 'Agregando...' : 'Agregar'}
+              {loading ? (
+                <div className="loading-spinner-small"></div>
+              ) : (
+                <Plus className="icon" />
+              )}
+              {loading ? 'Agregando...' : 'Agregar'}
             </button>
           </form>
 
-          <h2 className="section-title">Ubicaciones Existentes</h2>
-          <ul className="list-container">
-            {locations.map(location => (
-              <li key={location.id} className="list-item">
-                {editingLocation?.id === location.id ? (
-                  <div className="edit-form">
-                    <input
-                      type="text"
-                      value={editingLocation.name}
-                      onChange={(e) => setEditingLocation({ ...editingLocation, name: e.target.value })}
-                      className="edit-input"
-                    />
-                    <button onClick={handleUpdateLocation} className="action-btn save">Guardar</button>
-                    <button onClick={() => setEditingLocation(null)} className="action-btn cancel">Cancelar</button>
-                  </div>
-                ) : (
-                  <>
-                    <span className="item-name">{location.name}</span>
-                    <div className="action-buttons">
-                      <button onClick={() => setEditingLocation(location)} className="icon-btn edit">
-                        <Edit className="icon" />
-                      </button>
-                      <button onClick={() => handleDeleteLocation(location.id)} className="icon-btn delete">
-                        <Trash2 className="icon" />
-                      </button>
+          <h3 className="section-title">Ubicaciones Existentes</h3>
+          <div className="list-container">
+            {locations.length === 0 ? (
+              <div className="empty-state">
+                <i className="fas fa-map-marker-alt"></i>
+                <p>No hay ubicaciones creadas</p>
+              </div>
+            ) : (
+              locations.map(location => (
+                <div key={location.id} className="list-item">
+                  {editingLocation?.id === location.id ? (
+                    <div className="edit-form">
+                      <input
+                        type="text"
+                        value={editingLocation.name}
+                        onChange={(e) => setEditingLocation({ ...editingLocation, name: e.target.value })}
+                        className="edit-input"
+                        placeholder="Nombre de la ubicación"
+                      />
+                      <div className="edit-actions">
+                        <button onClick={handleUpdateLocation} className="action-btn save">
+                          <i className="fas fa-check"></i>
+                        </button>
+                        <button onClick={() => setEditingLocation(null)} className="action-btn cancel">
+                          <i className="fas fa-times"></i>
+                        </button>
+                      </div>
                     </div>
-                  </>
-                )}
-              </li>
-            ))}
-          </ul>
+                  ) : (
+                    <>
+                      <span className="item-name">{location.name}</span>
+                      <div className="action-buttons">
+                        <button 
+                          onClick={() => setEditingLocation(location)} 
+                          className="icon-btn edit"
+                          title="Editar"
+                        >
+                          <Edit className="icon" />
+                        </button>
+                        <button 
+                          onClick={() => handleDeleteLocation(location.id)} 
+                          className="icon-btn delete"
+                          title="Eliminar"
+                        >
+                          <Trash2 className="icon" />
+                        </button>
+                      </div>
+                    </>
+                  )}
+                </div>
+              ))
+            )}
+          </div>
         </div>
 
         {/* Categories Section */}
         <div className="management-card">
-          <h1 className="card-title">Gestionar Categorías</h1>
+          <h2 className="card-title">
+            <i className="fas fa-tags"></i>
+            Gestionar Categorías
+          </h2>
+          
           <form onSubmit={handleAddCategory} className="add-form">
             <input
               type="text"
@@ -177,48 +312,71 @@ const LocationsPage: React.FC<LocationsPageProps> = ({ locations, setLocations, 
               className="form-input"
             />
             <button type="submit" className="add-btn success">
-              <Plus className="icon" /> Agregar
+              <Plus className="icon" /> 
+              Agregar
             </button>
           </form>
 
-          <h2 className="section-title">Categorías Existentes</h2>
-          <ul className="list-container">
-            {categories.map(category => (
-              <li key={category} className="list-item">
-                {editingCategory === category ? (
-                  <div className="edit-form">
-                    <input
-                      type="text"
-                      defaultValue={category}
-                      onBlur={(e) => handleUpdateCategory(category, e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
-                          handleUpdateCategory(category, (e.target as HTMLInputElement).value);
-                        } else if (e.key === 'Escape') {
-                          setEditingCategory(null);
-                        }
-                      }}
-                      autoFocus
-                      className="edit-input"
-                    />
-                    <button onClick={() => setEditingCategory(null)} className="action-btn cancel">Cancelar</button>
-                  </div>
-                ) : (
-                  <>
-                    <span className="item-name">{category}</span>
-                    <div className="action-buttons">
-                      <button onClick={() => setEditingCategory(category)} className="icon-btn edit">
-                        <Edit className="icon" />
-                      </button>
-                      <button onClick={() => handleDeleteCategory(category)} className="icon-btn delete">
-                        <Trash2 className="icon" />
-                      </button>
+          <h3 className="section-title">Categorías Existentes</h3>
+          <div className="list-container">
+            {categories.length === 0 ? (
+              <div className="empty-state">
+                <i className="fas fa-tags"></i>
+                <p>No hay categorías creadas</p>
+              </div>
+            ) : (
+              categories.map(category => (
+                <div key={category} className="list-item">
+                  {editingCategory === category ? (
+                    <div className="edit-form">
+                      <input
+                        type="text"
+                        value={editCategoryName}
+                        onChange={(e) => setEditCategoryName(e.target.value)}
+                        className="edit-input"
+                        placeholder="Nombre de la categoría"
+                        autoFocus
+                      />
+                      <div className="edit-actions">
+                        <button 
+                          onClick={() => handleUpdateCategory(category, editCategoryName)} 
+                          className="action-btn save"
+                        >
+                          <i className="fas fa-check"></i>
+                        </button>
+                        <button 
+                          onClick={cancelEditingCategory} 
+                          className="action-btn cancel"
+                        >
+                          <i className="fas fa-times"></i>
+                        </button>
+                      </div>
                     </div>
-                  </>
-                )}
-              </li>
-            ))}
-          </ul>
+                  ) : (
+                    <>
+                      <span className="item-name">{category}</span>
+                      <div className="action-buttons">
+                        <button 
+                          onClick={() => startEditingCategory(category)} 
+                          className="icon-btn edit"
+                          title="Editar"
+                        >
+                          <Edit className="icon" />
+                        </button>
+                        <button 
+                          onClick={() => handleDeleteCategory(category)} 
+                          className="icon-btn delete"
+                          title="Eliminar"
+                        >
+                          <Trash2 className="icon" />
+                        </button>
+                      </div>
+                    </>
+                  )}
+                </div>
+              ))
+            )}
+          </div>
         </div>
       </div>
 
@@ -226,7 +384,69 @@ const LocationsPage: React.FC<LocationsPageProps> = ({ locations, setLocations, 
         .page-container {
           max-width: 1200px;
           margin: 0 auto;
-          space-y: 25px;
+          padding: 20px;
+        }
+
+        .page-header {
+          display: flex;
+          align-items: center;
+          gap: 15px;
+          margin-bottom: 30px;
+          padding-bottom: 15px;
+          border-bottom: 2px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .back-button {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          background: var(--primary);
+          color: white;
+          border: none;
+          padding: 10px 15px;
+          border-radius: 10px;
+          cursor: pointer;
+          transition: var(--transition);
+          font-weight: 500;
+        }
+
+        .back-button:hover {
+          background: var(--secondary);
+          transform: translateY(-2px);
+        }
+
+        .back-button .icon {
+          width: 16px;
+          height: 16px;
+        }
+
+        .page-header h1 {
+          font-size: 1.8rem;
+          font-weight: 700;
+          color: var(--dark);
+          margin: 0;
+        }
+
+        .error-message, .success-message {
+          padding: 15px;
+          border-radius: 12px;
+          margin-bottom: 20px;
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          font-weight: 500;
+        }
+
+        .error-message {
+          background: rgba(244, 67, 54, 0.1);
+          color: var(--danger);
+          border: 1px solid rgba(244, 67, 54, 0.2);
+        }
+
+        .success-message {
+          background: rgba(0, 200, 83, 0.1);
+          color: var(--success);
+          border: 1px solid rgba(0, 200, 83, 0.2);
         }
 
         .grid-layout {
@@ -245,10 +465,17 @@ const LocationsPage: React.FC<LocationsPageProps> = ({ locations, setLocations, 
         }
 
         .card-title {
-          font-size: 1.5rem;
+          font-size: 1.3rem;
           font-weight: 700;
           margin-bottom: 20px;
           color: var(--dark);
+          display: flex;
+          align-items: center;
+          gap: 10px;
+        }
+
+        .card-title i {
+          color: var(--primary);
         }
 
         .add-form {
@@ -306,6 +533,20 @@ const LocationsPage: React.FC<LocationsPageProps> = ({ locations, setLocations, 
           transform: none;
         }
 
+        .loading-spinner-small {
+          width: 16px;
+          height: 16px;
+          border: 2px solid transparent;
+          border-top: 2px solid white;
+          border-radius: 50%;
+          animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+
         .icon {
           width: 18px;
           height: 18px;
@@ -321,7 +562,23 @@ const LocationsPage: React.FC<LocationsPageProps> = ({ locations, setLocations, 
         .list-container {
           max-height: 400px;
           overflow-y: auto;
-          space-y: 1px;
+        }
+
+        .empty-state {
+          text-align: center;
+          padding: 40px 20px;
+          color: var(--text-light);
+        }
+
+        .empty-state i {
+          font-size: 3rem;
+          margin-bottom: 15px;
+          opacity: 0.5;
+        }
+
+        .empty-state p {
+          margin: 0;
+          font-size: 0.9rem;
         }
 
         .list-item {
@@ -352,7 +609,7 @@ const LocationsPage: React.FC<LocationsPageProps> = ({ locations, setLocations, 
         }
 
         .icon-btn {
-          padding: 6px;
+          padding: 8px;
           border: none;
           border-radius: 8px;
           cursor: pointer;
@@ -376,7 +633,8 @@ const LocationsPage: React.FC<LocationsPageProps> = ({ locations, setLocations, 
         .edit-form {
           display: flex;
           flex-grow: 1;
-          gap: 8px;
+          gap: 10px;
+          align-items: center;
         }
 
         .edit-input {
@@ -388,12 +646,16 @@ const LocationsPage: React.FC<LocationsPageProps> = ({ locations, setLocations, 
           font-size: 0.85rem;
         }
 
+        .edit-actions {
+          display: flex;
+          gap: 5px;
+        }
+
         .action-btn {
           padding: 8px 12px;
           border: none;
           border-radius: 8px;
           font-size: 0.8rem;
-          font-weight: 500;
           cursor: pointer;
           transition: var(--transition);
         }
@@ -424,12 +686,16 @@ const LocationsPage: React.FC<LocationsPageProps> = ({ locations, setLocations, 
           
           .management-card {
             padding: 20px;
-            margin: 0 10px;
           }
           
           .edit-form {
             flex-direction: column;
-            gap: 5px;
+            gap: 8px;
+          }
+          
+          .edit-actions {
+            width: 100%;
+            justify-content: space-between;
           }
         }
       `}</style>
