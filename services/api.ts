@@ -134,6 +134,78 @@ class ApiService {
       method: 'DELETE',
     });
   }
+  
+  // Agregar estos métodos a la clase ApiService en services/api.ts
+
+// Dashboard endpoints
+async getDashboardStats(): Promise < {
+  totalItems: number;
+  totalStock: number;
+  lowStockItems: number;
+  todayItemsSold: number;
+  todaySales: number;
+  totalValue: number;
+  recentActivity: number;
+} > {
+  return this.request('/dashboard/stats');
+}
+
+async getDashboardActivities(): Promise < any[] > {
+  return this.request('/dashboard/activities');
+}
+
+// Notifications endpoints
+async getNotifications(): Promise < {
+  id: string;
+  type: 'info' | 'warning' | 'error';
+  title: string;
+  message: string;
+  timestamp: string;
+  itemId ? : string;
+  priority: number;
+} [] > {
+  return this.request('/notifications');
+}
+
+async dismissNotification(notificationId: string): Promise < void > {
+  return this.request(`/notifications/${notificationId}/dismiss`, {
+    method: 'POST',
+  });
+}
+
+// Categories endpoints
+async getCategories(): Promise < string[] > {
+  return this.request('/categories');
+}
+
+async renameCategory(oldName: string, newName: string): Promise < { message: string;affectedRows: number } > {
+  return this.request('/categories/rename', {
+    method: 'POST',
+    body: JSON.stringify({ oldName, newName }),
+  });
+}
+
+async deleteCategory(categoryName: string): Promise < void > {
+  return this.request(`/categories/${categoryName}`, {
+    method: 'DELETE',
+  });
+}
+
+// Items transactions
+async getItemTransactions(itemId: string): Promise < Transaction[] > {
+  return this.request(`/items/${itemId}/transactions`);
+}
+
+// Reports enhancement
+async getReportsSummary(filters ? : { startDate ? : string;endDate ? : string;type ? : string }): Promise < any > {
+  const queryParams = new URLSearchParams();
+  if (filters?.startDate) queryParams.append('startDate', filters.startDate);
+  if (filters?.endDate) queryParams.append('endDate', filters.endDate);
+  if (filters?.type) queryParams.append('type', filters.type);
+  
+  const queryString = queryParams.toString();
+  return this.request(`/reports/summary${queryString ? `?${queryString}` : ''}`);
+}
 
   // Transactions endpoints
   async getTransactions(): Promise<Transaction[]> {
