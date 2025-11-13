@@ -82,22 +82,6 @@ const Dashboard: React.FC<DashboardProps> = ({ items, transactions, onNavigate }
     <div className="dashboard-container">
       {/* Header Section */}
       <header className="dashboard-header">
-        <div className="header-top">
-          <div className="logo">
-            <div className="logo-icon">
-              <Package className="icon" />
-            </div>
-            <div>
-              <h1>LiquidPOS</h1>
-              <p>Gestión de Inventario</p>
-            </div>
-          </div>
-          <div className="header-actions">
-            <button className="icon-btn">
-              <i className="fas fa-bell"></i>
-            </button>
-          </div>
-        </div>
 
         {/* Balance Card */}
         <div className="balance-card">
