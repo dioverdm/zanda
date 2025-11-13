@@ -54,7 +54,7 @@ const LocationsPage: React.FC<LocationsPageProps> = ({ locations, setLocations, 
   };
 
   const handleDeleteCategory = (category: string) => {
-    if (window.confirm(`Are you sure you want to delete category "${category}"?`)) {
+    if (window.confirm(`¿Seguro que quieres eliminar la categoría "${category}"?`)) {
       const updatedCategories = categories.filter(cat => cat !== category);
       setCategories(updatedCategories);
       if (setInitialCategories) {
@@ -79,21 +79,21 @@ const LocationsPage: React.FC<LocationsPageProps> = ({ locations, setLocations, 
       <div className="grid-layout">
         {/* Locations Section */}
         <div className="management-card">
-          <h1 className="card-title">Manage Locations</h1>
+          <h1 className="card-title">Gestionar ubicaciones</h1>
           <form onSubmit={handleAddLocation} className="add-form">
             <input
               type="text"
               value={newLocationName}
               onChange={(e) => setNewLocationName(e.target.value)}
-              placeholder="New location name (e.g., Warehouse C - Bay 4)"
+              placeholder="Nuevo nombre de ubicación (p. ej., Almacén C - Bahía 4)"
               className="form-input"
             />
             <button type="submit" className="add-btn primary">
-              <Plus className="icon" /> Add
+              <Plus className="icon" /> Agregar
             </button>
           </form>
 
-          <h2 className="section-title">Existing Locations</h2>
+          <h2 className="section-title">Ubicaciones existentes</h2>
           <ul className="list-container">
             {locations.map(location => (
               <li key={location.id} className="list-item">
@@ -105,8 +105,8 @@ const LocationsPage: React.FC<LocationsPageProps> = ({ locations, setLocations, 
                       onChange={(e) => setEditingLocation({ ...editingLocation, name: e.target.value })}
                       className="edit-input"
                     />
-                    <button onClick={handleUpdateLocation} className="action-btn save">Save</button>
-                    <button onClick={() => setEditingLocation(null)} className="action-btn cancel">Cancel</button>
+                    <button onClick={handleUpdateLocation} className="action-btn save">Guardar</button>
+                    <button onClick={() => setEditingLocation(null)} className="action-btn cancel">Cancelar</button>
                   </div>
                 ) : (
                   <>
@@ -128,21 +128,21 @@ const LocationsPage: React.FC<LocationsPageProps> = ({ locations, setLocations, 
 
         {/* Categories Section */}
         <div className="management-card">
-          <h1 className="card-title">Manage Categories</h1>
+          <h1 className="card-title">Gestionar categorías</h1>
           <form onSubmit={handleAddCategory} className="add-form">
             <input
               type="text"
               value={newCategory}
               onChange={(e) => setNewCategory(e.target.value)}
-              placeholder="New category name (e.g., Electronics)"
+              placeholder="Nombre de la nueva categoría (p. ej., Electrónica)"
               className="form-input"
             />
             <button type="submit" className="add-btn success">
-              <Plus className="icon" /> Add
+              <Plus className="icon" /> Agregar
             </button>
           </form>
 
-          <h2 className="section-title">Existing Categories</h2>
+          <h2 className="section-title">Categorías existentes</h2>
           <ul className="list-container">
             {categories.map(category => (
               <li key={category} className="list-item">
@@ -162,7 +162,7 @@ const LocationsPage: React.FC<LocationsPageProps> = ({ locations, setLocations, 
                       autoFocus
                       className="edit-input"
                     />
-                    <button onClick={() => setEditingCategory(null)} className="action-btn cancel">Cancel</button>
+                    <button onClick={() => setEditingCategory(null)} className="action-btn cancel">Cancelar</button>
                   </div>
                 ) : (
                   <>

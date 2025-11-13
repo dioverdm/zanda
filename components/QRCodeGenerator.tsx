@@ -65,7 +65,7 @@ const QRCodeGenerator: React.FC < QRCodeGeneratorProps > = ({ item, locationName
       document.body.innerHTML = `
         <html>
           <head>
-            <title>Print QR Code</title>
+            <title>Imprimir código QR</title>
             <style>
               @media print {
                 body {
@@ -124,7 +124,7 @@ const QRCodeGenerator: React.FC < QRCodeGeneratorProps > = ({ item, locationName
     <div className="modal-overlay">
       <div className="modal-content">
         <div className="modal-header">
-          <h2 className="modal-title">Print QR Code</h2>
+          <h2 className="modal-title">Imprimir código QR</h2>
           <button onClick={onClose} className="close-btn">
             <i className="fas fa-times"></i>
           </button>
@@ -147,7 +147,7 @@ const QRCodeGenerator: React.FC < QRCodeGeneratorProps > = ({ item, locationName
         <div className="modal-actions">
           <button onClick={handlePrint} className="print-btn">
             <i className="fas fa-print"></i>
-            Print Label
+            Impresa QR
           </button>
         </div>
       </div>

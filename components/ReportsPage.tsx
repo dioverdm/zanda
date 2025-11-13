@@ -23,17 +23,17 @@ const ReportsPage: React.FC < ReportsPageProps > = ({ transactions, items }) => 
   
   return (
     <div className="reports-container">
-      <h1 className="page-title">Transaction Reports</h1>
+      <h1 className="page-title">Informes de transacciones</h1>
       
       <div className="filters-container">
         <select value={filterType} onChange={e => setFilterType(e.target.value)} className="filter-select">
-          <option value="">All Transaction Types</option>
+          <option value="">Todos los tipos de transacciones</option>
           {Object.values(TransactionType).map(type => (
             <option key={type} value={type}>{type}</option>
           ))}
         </select>
         <select value={filterItem} onChange={e => setFilterItem(e.target.value)} className="filter-select">
-          <option value="">All Items</option>
+          <option value="">Todos los artículos</option>
           {items.map(item => (
             <option key={item.id} value={item.id}>{item.name} ({item.sku})</option>
           ))}
@@ -44,11 +44,11 @@ const ReportsPage: React.FC < ReportsPageProps > = ({ transactions, items }) => 
         <table className="transactions-table">
           <thead className="table-header">
             <tr>
-              <th className="table-head">Date & Time</th>
+              <th className="table-head">Fecha y hora</th>
               <th className="table-head">Item</th>
               <th className="table-head">SKU</th>
-              <th className="table-head">Type</th>
-              <th className="table-head text-right">Quantity Change</th>
+              <th className="table-head">Tipo</th>
+              <th className="table-head text-right">Cambio de cantidad</th>
             </tr>
           </thead>
           <tbody className="table-body">
@@ -59,9 +59,9 @@ const ReportsPage: React.FC < ReportsPageProps > = ({ transactions, items }) => 
                 <td className="table-cell sku">{getItemSku(t.itemId)}</td>
                 <td className="table-cell">
                   <span className={`type-badge ${
-                    t.type === TransactionType.INBOUND ? 'inbound' :
-                    t.type === TransactionType.OUTBOUND ? 'outbound' :
-                    'adjustment'
+                    t.type === TransactionType.INBOUND ? 'entrante' :
+                    t.type === TransactionType.OUTBOUND ? 'salida' :
+                    'ajuste'
                   }`}>
                     {t.type}
                   </span>

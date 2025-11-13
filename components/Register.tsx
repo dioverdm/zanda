@@ -164,7 +164,7 @@ const Register: React.FC < RegisterProps > = ({ onRegister, onNavigateToLogin })
               {loading ? (
                 <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
               ) : (
-                'Create Account'
+                'Crear una cuenta'
               )}
             </button>
 
@@ -174,7 +174,7 @@ const Register: React.FC < RegisterProps > = ({ onRegister, onNavigateToLogin })
               className="w-full flex items-center justify-center gap-2 py-3 px-4 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors transform hover:scale-105 active:scale-95"
             >
               <LogIn className="h-4 w-4" />
-              Back to Login
+              Volver a la página de inicio de sesión
             </button>
           </div>
         </form>

@@ -10,9 +10,9 @@ interface ScannerPageProps {
 }
 
 enum ScanMode {
-  INBOUND = 'Inbound',
-  OUTBOUND = 'Outbound',
-  LOOKUP = 'Lookup'
+  INBOUND = 'Entrada',
+  OUTBOUND = 'Salida',
+  LOOKUP = 'Buscar'
 }
 
 const ScannerPage: React.FC<ScannerPageProps> = ({ onStockUpdate, onNavigateToDetail, onNavigateToForm }) => {
@@ -39,7 +39,7 @@ const ScannerPage: React.FC<ScannerPageProps> = ({ onStockUpdate, onNavigateToDe
         setIsInitializing(true);
         
         if (!readerRef.current) {
-          throw new Error('Reader ref not available');
+          throw new Error('Referencia del lector no disponible');
         }
 
         const html5QrCode = new Html5Qrcode(readerRef.current.id, { 
@@ -60,7 +60,7 @@ const ScannerPage: React.FC<ScannerPageProps> = ({ onStockUpdate, onNavigateToDe
           
           if (!isMounted) return;
         } catch (permError: any) {
-          setCameraError('Camera permission denied. Please allow camera access in your browser settings.');
+          setCameraError('Permiso de cámara denegado. Por favor, permita el acceso a la cámara en la configuración de su navegador.');
           setIsInitializing(false);
           return;
         }
@@ -85,11 +85,11 @@ const ScannerPage: React.FC<ScannerPageProps> = ({ onStockUpdate, onNavigateToDe
           setSelectedCameraId(cameraToUse.id);
           setCameraError(null);
         } else {
-          setCameraError('No cameras found on this device.');
+          setCameraError('No se encontraron cámaras en este dispositivo.');
         }
         
       } catch (error: any) {
-        setCameraError(`Failed to initialize camera: ${error.message || 'Unknown error'}`);
+        setCameraError(`Error al inicializar la cámara: ${error.message || 'Error desconocido'}`);
       } finally {
         if (isMounted) {
           setIsInitializing(false);
@@ -102,7 +102,7 @@ const ScannerPage: React.FC<ScannerPageProps> = ({ onStockUpdate, onNavigateToDe
     return () => {
       isMounted = false;
       if (scannerRef.current?.isScanning) {
-        scannerRef.current.stop().catch((err: any) => console.error('Error stopping scanner:', err));
+        scannerRef.current.stop().catch((err: any) => console.error('Error al detener el escáner:', err));
       }
     };
   }, []);
@@ -140,7 +140,7 @@ const ScannerPage: React.FC<ScannerPageProps> = ({ onStockUpdate, onNavigateToDe
       setCameraError(null);
       setMessage(null);
     } catch (err: any) {
-      setCameraError(`Camera error: ${err.message || 'Failed to start camera'}`);
+      setCameraError(`Error de cámara: ${err.message || 'No se pudo encender la cámara'}`);
     }
   };
   
@@ -149,7 +149,7 @@ const ScannerPage: React.FC<ScannerPageProps> = ({ onStockUpdate, onNavigateToDe
       try {
         await scannerRef.current.stop();
       } catch (err: any) {
-        console.error("Error stopping scanner:", err);
+        console.error("Error al detener el escáner:", err);
       }
     }
   };
@@ -168,10 +168,10 @@ const ScannerPage: React.FC<ScannerPageProps> = ({ onStockUpdate, onNavigateToDe
     const success = onStockUpdate(scannedSku, scanMode === ScanMode.INBOUND ? quantity : -quantity, scanMode as unknown as TransactionType);
     
     if(success) {
-      setMessage({ text: `✓ Stock updated! SKU: ${scannedSku}, Change: ${scanMode === ScanMode.INBOUND ? '+' : '-'}${quantity}`, type: 'success' });
+      setMessage({ text: `✓ ¡Stock actualizado! SKU: ${scannedSku}, Cambiar: ${scanMode === ScanMode.INBOUND ? '+' : '-'}${quantity}`, type: 'success' });
       setItemExists(true);
     } else {
-      setMessage({ text: `Item not found. Do you want to add this item?`, type: 'error' });
+      setMessage({ text: `Artículo no encontrado. ¿Desea agregar este artículo?`, type: 'error' });
       setItemExists(false);
     }
     
@@ -228,7 +228,7 @@ const ScannerPage: React.FC<ScannerPageProps> = ({ onStockUpdate, onNavigateToDe
           });
           stream.getTracks().forEach(track => track.stop());
         } catch (permError: any) {
-          setCameraError('Camera permission denied. Please allow camera access in your browser settings.');
+          setCameraError('Permiso de cámara denegado. Por favor, permita el acceso a la cámara en la configuración de su navegador.');
           setIsInitializing(false);
           return;
         }
@@ -249,10 +249,10 @@ const ScannerPage: React.FC<ScannerPageProps> = ({ onStockUpdate, onNavigateToDe
           setSelectedCameraId(cameraToUse.id);
           setCameraError(null);
         } else {
-          setCameraError('No cameras found on this device.');
+          setCameraError('No se encontraron cámaras en este dispositivo.');
         }
       } catch (error: any) {
-        setCameraError(`Failed to reinitialize camera: ${error.message || 'Unknown error'}`);
+        setCameraError(`Error al reinicializar la cámara: ${error.message || 'Error desconocido'}`);
       }
     }
     
@@ -266,13 +266,13 @@ const ScannerPage: React.FC<ScannerPageProps> = ({ onStockUpdate, onNavigateToDe
       {isInitializing && (
         <div className="status-message initializing">
           <div className="spinner"></div>
-          <span>Initializing camera...</span>
+          <span>Inicializando la cámara...</span>
         </div>
       )}
       
       {cameras.length > 1 && !isInitializing && (
         <div className="camera-selector">
-          <label htmlFor="camera-select" className="camera-label">Select Camera:</label>
+          <label htmlFor="camera-select" className="camera-label">Seleccionar cámara:</label>
           <select 
             id="camera-select"
             value={selectedCameraId} 
@@ -280,7 +280,7 @@ const ScannerPage: React.FC<ScannerPageProps> = ({ onStockUpdate, onNavigateToDe
             className="camera-select"
           >
             {cameras.map(camera => (
-              <option key={camera.id} value={camera.id}>{camera.label || `Camera ${camera.id}`}</option>
+              <option key={camera.id} value={camera.id}>{camera.label || `Cámara ${camera.id}`}</option>
             ))}
           </select>
         </div>
@@ -290,20 +290,20 @@ const ScannerPage: React.FC<ScannerPageProps> = ({ onStockUpdate, onNavigateToDe
         <div id="qr-reader" ref={readerRef} className="scanner-view">
           {cameraError && (
             <div className="error-container">
-              <p className="error-title">⚠️ Camera Error</p>
+              <p className="error-title">⚠️ Error de cámara</p>
               <p className="error-message">{cameraError}</p>
               <div className="error-actions">
                 <button 
                   onClick={handleRetry}
                   className="error-btn retry"
                 >
-                  Retry
+                  Reintentar
                 </button>
                 <button 
                   onClick={() => window.location.reload()} 
                   className="error-btn refresh"
                 >
-                  Refresh Page
+                  Actualizar página
                 </button>
               </div>
             </div>
@@ -311,7 +311,7 @@ const ScannerPage: React.FC<ScannerPageProps> = ({ onStockUpdate, onNavigateToDe
           {isInitializing && !cameraError && (
             <div className="loading-message">
               <div className="spinner"></div>
-              <p>Loading camera...</p>
+              <p>Cargando cámara...</p>
             </div>
           )}
         </div>
@@ -325,7 +325,7 @@ const ScannerPage: React.FC<ScannerPageProps> = ({ onStockUpdate, onNavigateToDe
               onClick={handleAddNewItemFromScan}
               className="add-item-btn"
             >
-              Add New Item
+              Agregar nuevo artículo
             </button>
           )}
         </div>
@@ -349,7 +349,7 @@ const ScannerPage: React.FC<ScannerPageProps> = ({ onStockUpdate, onNavigateToDe
         <div className="scan-result">
           <p className="scan-sku">Scanned SKU: <span className="sku-value">{scannedSku}</span></p>
           <div className="quantity-control">
-            <label htmlFor="quantity" className="quantity-label">Quantity:</label>
+            <label htmlFor="quantity" className="quantity-label">Cantidad:</label>
             <input
               type="number"
               id="quantity"
@@ -361,10 +361,10 @@ const ScannerPage: React.FC<ScannerPageProps> = ({ onStockUpdate, onNavigateToDe
           <div className="result-actions">
             <button onClick={resetScannerState} className="action-btn secondary">
               <RotateCcw className="icon" />
-              Scan Again
+              Escanear de nuevo
             </button>
             <button onClick={handleConfirmScan} className="action-btn primary">
-              Confirm {scanMode}
+              Confirmar {scanMode}
             </button>
           </div>
         </div>
