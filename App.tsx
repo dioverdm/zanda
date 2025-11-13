@@ -10,6 +10,7 @@ import ScannerPage from './components/ScannerPage';
 import LocationsPage from './components/LocationsPage';
 import ReportsPage from './components/ReportsPage';
 import Login from './components/Login';
+import Register from './components/Register';
 import { apiService } from './services/api';
 
 const App: React.FC = () => {
@@ -71,6 +72,7 @@ const App: React.FC = () => {
   const getCurrentPage = (): Page => {
     const path = location.pathname;
     if (path === '/login') return Page.LOGIN;
+    if (path === '/register') return Page.REGISTER;
     if (path === '/inventory') return Page.INVENTORY;
     if (path === '/scanner') return Page.SCANNER;
     if (path === '/locations') return Page.LOCATIONS;
@@ -91,6 +93,7 @@ const App: React.FC = () => {
     else if (page === Page.ITEM_DETAIL && itemId) navigate(`/item/${itemId}`);
     else if (page === Page.ITEM_FORM) navigate('/add-item');
     else if (page === Page.LOGIN) navigate('/login');
+    else if (page === Page.REGISTER) navigate('/register');
     
     setSelectedItemId(itemId || null);
     setItemToEdit(null);
