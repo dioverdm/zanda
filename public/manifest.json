@@ -80,25 +80,25 @@
   ],
   "shortcuts": [
     {
-      "name": "Servicios",
-      "short_name": "Servicios",
-      "description": "Explora los servicios de Pogo OS",
-      "url": "/servicios",
-      "icons": [{ "src": "/assets/icons/shortcut-services.png", "sizes": "96x96" }]
+      "name": "Inventario",
+      "short_name": "Inventario",
+      "description": "Gestiona los productos en tu inventario",
+      "url": "/inventory",
+      "icons": [{ "src": "/icons/package.svg", "sizes": "96x96" }]
     },
     {
-      "name": "Proyectos",
-      "short_name": "Proyectos",
-      "description": "Descubre nuestros proyectos destacados",
-      "url": "/proyectos",
-      "icons": [{ "src": "/assets/icons/shortcut-projects.png", "sizes": "96x96" }]
+      "name": "Ajustes",
+      "short_name": "Ajustes",
+      "description": "Configura LiquidPos segun las necesidades de tu negocio",
+      "url": "/locations",
+      "icons": [{ "src": "/icons/settings.svg", "sizes": "96x96" }]
     },
     {
-      "name": "Contacto",
-      "short_name": "Contacto",
-      "description": "Comunícate con el equipo de Pogo OS",
-      "url": "/contacto",
-      "icons": [{ "src": "/assets/icons/shortcut-contact.png", "sizes": "96x96" }]
+      "name": "Escanear",
+      "short_name": "Escanear",
+      "description": "Escanea codigos de barra para añadir, restar o buscar productos.",
+      "url": "/scanner",
+      "icons": [{ "src": "/icons/scanner.svg", "sizes": "96x96" }]
     }
   ],
   "related_applications": [

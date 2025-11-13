@@ -162,7 +162,7 @@ const App: React.FC = () => {
   };
   
   const handleDeleteItem = async (itemId: string) => {
-    if (window.confirm('Are you sure you want to delete this item?')) {
+    if (window.confirm('¿Seguro que quieres eliminar este elemento?')) {
       try {
         await apiService.deleteItem(itemId);
         setItems(prev => prev.filter(item => item.id !== itemId));
@@ -171,7 +171,7 @@ const App: React.FC = () => {
           navigate('/inventory');
         }
       } catch (error) {
-        alert('Failed to delete item');
+        alert('No se pudo eliminar el elemento');
       }
     }
   };
@@ -187,7 +187,7 @@ const App: React.FC = () => {
       }
       navigate('/inventory');
     } catch (error) {
-      alert('Failed to save item');
+      alert('No se pudo guardar el elemento');
     }
   };
 
@@ -217,7 +217,7 @@ const App: React.FC = () => {
       setTransactions(prev => [newTransaction, ...prev]);
       return true;
     } catch (error) {
-      console.error('Failed to update stock:', error);
+      console.error('Error al actualizar el stock:', error);
       return false;
     }
   }, [items]);
@@ -290,7 +290,7 @@ case Page.LOGIN:
                 setSelectedItemId(item.id);
                 navigate(`/item/${item.id}`);
               } else {
-                alert('Item not found');
+                alert('Artículo no encontrado');
               }
             }} 
             onNavigateToForm={handleAddItemFromScanner} 
