@@ -25,13 +25,12 @@ const ScannerPage: React.FC<ScannerPageProps> = ({ onStockUpdate, onNavigateToDe
   
   const scannerRef = useRef<any>(null);
   const readerRef = useRef<HTMLDivElement>(null);
-  const initializationAttemptRef = useRef(0);
 
   const [cameras, setCameras] = useState<{ id: string; label: string }[]>([]);
   const [selectedCameraId, setSelectedCameraId] = useState<string>('');
   const [cameraError, setCameraError] = useState<string | null>(null);
 
-  // Effect to initialize scanner and get cameras with improved error handling
+  // Initialize scanner
   useEffect(() => {
     let isMounted = true;
     
@@ -43,7 +42,6 @@ const ScannerPage: React.FC<ScannerPageProps> = ({ onStockUpdate, onNavigateToDe
           throw new Error('Reader ref not available');
         }
 
-        // Create new scanner instance
         const html5QrCode = new Html5Qrcode(readerRef.current.id, { 
           verbose: false,
           formatsToSupport: undefined 
@@ -52,41 +50,31 @@ const ScannerPage: React.FC<ScannerPageProps> = ({ onStockUpdate, onNavigateToDe
         if (!isMounted) return;
         scannerRef.current = html5QrCode;
 
-        // Step 1: Request camera permission with explicit handling
-        let permissionGranted = false;
+        // Request camera permission
         try {
           const stream = await navigator.mediaDevices.getUserMedia({ 
             video: { facingMode: 'environment' },
             audio: false
           });
-          
-          // Stop the stream immediately after getting permission
           stream.getTracks().forEach(track => track.stop());
-          permissionGranted = true;
           
           if (!isMounted) return;
-          console.log('✓ Camera permission granted');
         } catch (permError: any) {
-          console.warn('Camera permission denied or error:', permError.message);
           setCameraError('Camera permission denied. Please allow camera access in your browser settings.');
           setIsInitializing(false);
           return;
         }
 
-        // Step 2: Add delay to ensure camera is fully initialized
-        if (!isMounted) return;
         await new Promise(resolve => setTimeout(resolve, 500));
 
-        // Step 3: Get available cameras
+        // Get available cameras
         const devices = await Html5Qrcode.getCameras();
         
         if (!isMounted) return;
         
         if (devices && devices.length > 0) {
-          console.log('✓ Found cameras:', devices.map(d => d.label || d.id));
           setCameras(devices);
           
-          // Prefer rear camera if available
           const rearCamera = devices.find(device => 
             device.label.toLowerCase().includes('back') || 
             device.label.toLowerCase().includes('rear') ||
@@ -101,7 +89,6 @@ const ScannerPage: React.FC<ScannerPageProps> = ({ onStockUpdate, onNavigateToDe
         }
         
       } catch (error: any) {
-        console.error('Scanner initialization error:', error);
         setCameraError(`Failed to initialize camera: ${error.message || 'Unknown error'}`);
       } finally {
         if (isMounted) {
@@ -112,19 +99,17 @@ const ScannerPage: React.FC<ScannerPageProps> = ({ onStockUpdate, onNavigateToDe
 
     initializeScanner();
 
-    // Cleanup function
     return () => {
       isMounted = false;
       if (scannerRef.current?.isScanning) {
-        scannerRef.current.stop().catch((err: any) => console.error('Error stopping scanner on unmount:', err));
+        scannerRef.current.stop().catch((err: any) => console.error('Error stopping scanner:', err));
       }
     };
   }, []);
 
-  // Effect to start scanner when camera ID is selected
+  // Start scanner when camera is selected
   useEffect(() => {
     if (selectedCameraId && !scannedSku && !isInitializing) {
-      // Add small delay before starting scanner
       const timer = setTimeout(() => {
         startScanner();
       }, 300);
@@ -133,18 +118,10 @@ const ScannerPage: React.FC<ScannerPageProps> = ({ onStockUpdate, onNavigateToDe
     }
   }, [selectedCameraId, scannedSku, isInitializing]);
 
-
   const startScanner = async () => {
-    if (!scannerRef.current || !selectedCameraId) {
-      console.warn('Scanner not ready or no camera selected');
-      return;
-    }
+    if (!scannerRef.current || !selectedCameraId) return;
 
-    // If already scanning, don't start again
-    if (scannerRef.current.isScanning) {
-      console.log('Scanner already running');
-      return;
-    }
+    if (scannerRef.current.isScanning) return;
 
     try {
       const config = { 
@@ -160,11 +137,9 @@ const ScannerPage: React.FC<ScannerPageProps> = ({ onStockUpdate, onNavigateToDe
         (errorMessage: string) => { /* ignore frame errors */ }
       );
 
-      console.log('✓ Scanner started successfully');
       setCameraError(null);
       setMessage(null);
     } catch (err: any) {
-      console.error(`Failed to start scanner with camera ${selectedCameraId}:`, err);
       setCameraError(`Camera error: ${err.message || 'Failed to start camera'}`);
     }
   };
@@ -173,7 +148,6 @@ const ScannerPage: React.FC<ScannerPageProps> = ({ onStockUpdate, onNavigateToDe
     if (scannerRef.current?.isScanning) {
       try {
         await scannerRef.current.stop();
-        console.log('✓ Scanner stopped');
       } catch (err: any) {
         console.error("Error stopping scanner:", err);
       }
@@ -181,7 +155,6 @@ const ScannerPage: React.FC<ScannerPageProps> = ({ onStockUpdate, onNavigateToDe
   };
   
   const handleScanSuccess = (decodedText: string) => {
-    console.log('✓ QR code scanned:', decodedText);
     stopScanner().then(() => {
       setScannedSku(decodedText);
       setItemExists(null);
@@ -192,14 +165,12 @@ const ScannerPage: React.FC<ScannerPageProps> = ({ onStockUpdate, onNavigateToDe
   const handleConfirmScan = () => {
     if (!scannedSku) return;
 
-    // Try to update stock
     const success = onStockUpdate(scannedSku, scanMode === ScanMode.INBOUND ? quantity : -quantity, scanMode as unknown as TransactionType);
     
     if(success) {
       setMessage({ text: `✓ Stock updated! SKU: ${scannedSku}, Change: ${scanMode === ScanMode.INBOUND ? '+' : '-'}${quantity}`, type: 'success' });
       setItemExists(true);
     } else {
-      // Item doesn't exist - show option to add
       setMessage({ text: `Item not found. Do you want to add this item?`, type: 'error' });
       setItemExists(false);
     }
@@ -229,12 +200,10 @@ const ScannerPage: React.FC<ScannerPageProps> = ({ onStockUpdate, onNavigateToDe
   };
 
   const handleRetry = async () => {
-    console.log('Retrying camera initialization...');
     setCameraError(null);
     setIsInitializing(true);
     await stopScanner();
     
-    // Reset and reinitialize scanner ref
     if (scannerRef.current) {
       try {
         await scannerRef.current.clear();
@@ -244,7 +213,6 @@ const ScannerPage: React.FC<ScannerPageProps> = ({ onStockUpdate, onNavigateToDe
       }
     }
     
-    // Create new scanner instance
     if (readerRef.current) {
       try {
         const html5QrCode = new Html5Qrcode(readerRef.current.id, { 
@@ -253,28 +221,22 @@ const ScannerPage: React.FC<ScannerPageProps> = ({ onStockUpdate, onNavigateToDe
         });
         scannerRef.current = html5QrCode;
         
-        // Request permission again
         try {
           const stream = await navigator.mediaDevices.getUserMedia({ 
             video: { facingMode: 'environment' },
             audio: false
           });
           stream.getTracks().forEach(track => track.stop());
-          console.log('✓ Camera permission granted on retry');
         } catch (permError: any) {
-          console.warn('Camera permission denied on retry:', permError.message);
           setCameraError('Camera permission denied. Please allow camera access in your browser settings.');
           setIsInitializing(false);
           return;
         }
         
-        // Wait for camera to be ready
         await new Promise(resolve => setTimeout(resolve, 500));
         
-        // Get available cameras
         const devices = await Html5Qrcode.getCameras();
         if (devices && devices.length > 0) {
-          console.log('✓ Found cameras on retry:', devices.map(d => d.label || d.id));
           setCameras(devices);
           
           const rearCamera = devices.find(device => 
@@ -290,7 +252,6 @@ const ScannerPage: React.FC<ScannerPageProps> = ({ onStockUpdate, onNavigateToDe
           setCameraError('No cameras found on this device.');
         }
       } catch (error: any) {
-        console.error('Retry initialization error:', error);
         setCameraError(`Failed to reinitialize camera: ${error.message || 'Unknown error'}`);
       }
     }
@@ -299,26 +260,24 @@ const ScannerPage: React.FC<ScannerPageProps> = ({ onStockUpdate, onNavigateToDe
   };
 
   return (
-    <div className="max-w-2xl mx-auto bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md space-y-6">
-      <h1 className="text-2xl font-bold text-center">QR Code Scanner</h1>
+    <div className="scanner-container">
+      <h1 className="scanner-title">QR Code Scanner</h1>
       
       {isInitializing && (
-        <div className="flex items-center justify-center p-4 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded-lg">
-          <div className="flex items-center gap-2">
-            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-current"></div>
-            <span>Initializing camera...</span>
-          </div>
+        <div className="status-message initializing">
+          <div className="spinner"></div>
+          <span>Initializing camera...</span>
         </div>
       )}
       
       {cameras.length > 1 && !isInitializing && (
-        <div className="flex flex-col items-center">
-          <label htmlFor="camera-select" className="text-sm font-medium mb-1 dark:text-gray-300">Select Camera:</label>
+        <div className="camera-selector">
+          <label htmlFor="camera-select" className="camera-label">Select Camera:</label>
           <select 
             id="camera-select"
             value={selectedCameraId} 
             onChange={handleCameraChange}
-            className="w-full max-w-xs p-2 border dark:border-gray-600 rounded-md bg-white dark:bg-gray-700"
+            className="camera-select"
           >
             {cameras.map(camera => (
               <option key={camera.id} value={camera.id}>{camera.label || `Camera ${camera.id}`}</option>
@@ -327,21 +286,21 @@ const ScannerPage: React.FC<ScannerPageProps> = ({ onStockUpdate, onNavigateToDe
         </div>
       )}
 
-      <div id="qr-reader" ref={readerRef} className="w-full border-4 border-dashed dark:border-gray-600 rounded-lg overflow-hidden min-h-[300px] flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+      <div id="qr-reader" ref={readerRef} className="scanner-view">
         {cameraError && (
-          <div className="text-center p-4 text-red-500 space-y-3">
-            <p className="font-semibold">⚠️ Camera Error</p>
-            <p>{cameraError}</p>
-            <div className="space-y-2">
+          <div className="error-container">
+            <p className="error-title">⚠️ Camera Error</p>
+            <p className="error-message">{cameraError}</p>
+            <div className="error-actions">
               <button 
                 onClick={handleRetry}
-                className="w-full bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700"
+                className="error-btn retry"
               >
                 Retry
               </button>
               <button 
                 onClick={() => window.location.reload()} 
-                className="w-full bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700"
+                className="error-btn refresh"
               >
                 Refresh Page
               </button>
@@ -349,19 +308,19 @@ const ScannerPage: React.FC<ScannerPageProps> = ({ onStockUpdate, onNavigateToDe
           </div>
         )}
         {isInitializing && !cameraError && (
-          <div className="text-center text-gray-500 dark:text-gray-400">
+          <div className="loading-message">
             <p>Loading camera...</p>
           </div>
         )}
       </div>
 
       {message && (
-        <div className={`p-4 rounded-md ${message.type === 'success' ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200' : 'bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200'}`}>
+        <div className={`message ${message.type}`}>
           <p>{message.text}</p>
           {message.type === 'error' && itemExists === false && (
             <button 
               onClick={handleAddNewItemFromScan}
-              className="mt-2 bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 w-full"
+              className="add-item-btn"
             >
               Add New Item
             </button>
@@ -370,12 +329,12 @@ const ScannerPage: React.FC<ScannerPageProps> = ({ onStockUpdate, onNavigateToDe
       )}
 
       {!isInitializing && cameras.length > 0 && !cameraError && (
-        <div className="flex justify-center bg-gray-100 dark:bg-gray-700 p-1 rounded-lg">
+        <div className="mode-selector">
           {(Object.values(ScanMode)).map(mode => (
             <button
               key={mode}
               onClick={() => setScanMode(mode)}
-              className={`w-full py-2 px-4 rounded-md font-semibold transition-colors ${scanMode === mode ? 'bg-indigo-600 text-white shadow' : 'text-gray-600 dark:text-gray-300'}`}
+              className={`mode-btn ${scanMode === mode ? 'active' : ''}`}
             >
               {mode}
             </button>
@@ -384,29 +343,326 @@ const ScannerPage: React.FC<ScannerPageProps> = ({ onStockUpdate, onNavigateToDe
       )}
       
       {scannedSku && scanMode !== ScanMode.LOOKUP && (
-        <div className="p-4 border dark:border-gray-600 rounded-lg space-y-4 bg-gray-50 dark:bg-gray-700">
-          <p className="font-semibold text-center">Scanned SKU: <span className="text-indigo-600 dark:text-indigo-400 font-mono">{scannedSku}</span></p>
-          <div className="flex items-center gap-4">
-            <label htmlFor="quantity" className="font-medium">Quantity:</label>
+        <div className="scan-result">
+          <p className="scan-sku">Scanned SKU: <span className="sku-value">{scannedSku}</span></p>
+          <div className="quantity-control">
+            <label htmlFor="quantity" className="quantity-label">Quantity:</label>
             <input
               type="number"
               id="quantity"
               value={quantity}
               onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
-              className="w-full p-2 border dark:border-gray-500 rounded-md bg-white dark:bg-gray-800"
+              className="quantity-input"
             />
           </div>
-          <div className="flex gap-4">
-            <button onClick={resetScannerState} className="w-full flex items-center justify-center gap-2 bg-gray-500 text-white p-3 rounded-lg font-semibold hover:bg-gray-600">
-              <RotateCcw className="h-5 w-5" />
+          <div className="result-actions">
+            <button onClick={resetScannerState} className="action-btn secondary">
+              <RotateCcw className="icon" />
               Scan Again
             </button>
-            <button onClick={handleConfirmScan} className="w-full bg-green-600 text-white p-3 rounded-lg font-semibold hover:bg-green-700">
+            <button onClick={handleConfirmScan} className="action-btn primary">
               Confirm {scanMode}
             </button>
           </div>
         </div>
       )}
+
+      <style jsx>{`
+        .scanner-container {
+          max-width: 600px;
+          margin: 0 auto;
+          background: var(--glass-bg);
+          backdrop-filter: blur(10px);
+          border-radius: 20px;
+          padding: 25px;
+          box-shadow: var(--shadow);
+          border: 1px solid var(--glass-border);
+          space-y: 20px;
+        }
+
+        .scanner-title {
+          font-size: 1.8rem;
+          font-weight: 700;
+          text-align: center;
+          color: var(--dark);
+          margin-bottom: 10px;
+        }
+
+        .status-message {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          padding: 15px;
+          border-radius: 12px;
+          font-weight: 500;
+        }
+
+        .status-message.initializing {
+          background: rgba(33, 150, 243, 0.1);
+          color: #2196F3;
+        }
+
+        .spinner {
+          width: 20px;
+          height: 20px;
+          border: 2px solid transparent;
+          border-top: 2px solid currentColor;
+          border-radius: 50%;
+          animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+
+        .camera-selector {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+        }
+
+        .camera-label {
+          font-size: 0.9rem;
+          font-weight: 500;
+          margin-bottom: 8px;
+          color: var(--dark);
+        }
+
+        .camera-select {
+          width: 100%;
+          max-width: 300px;
+          padding: 10px 15px;
+          border: 1px solid rgba(0, 0, 0, 0.1);
+          border-radius: 10px;
+          background: white;
+          font-size: 0.9rem;
+          cursor: pointer;
+        }
+
+        .scanner-view {
+          width: 100%;
+          height: 300px;
+          border: 3px dashed rgba(0, 0, 0, 0.2);
+          border-radius: 15px;
+          overflow: hidden;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: rgba(0, 0, 0, 0.02);
+        }
+
+        .error-container {
+          text-align: center;
+          padding: 20px;
+          color: var(--danger);
+          space-y: 15px;
+        }
+
+        .error-title {
+          font-weight: 600;
+          font-size: 1.1rem;
+          margin-bottom: 10px;
+        }
+
+        .error-message {
+          font-size: 0.9rem;
+          margin-bottom: 15px;
+        }
+
+        .error-actions {
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+        }
+
+        .error-btn {
+          padding: 12px 20px;
+          border: none;
+          border-radius: 10px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: var(--transition);
+        }
+
+        .error-btn.retry {
+          background: var(--danger);
+          color: white;
+        }
+
+        .error-btn.refresh {
+          background: rgba(0, 0, 0, 0.1);
+          color: var(--text);
+        }
+
+        .error-btn:hover {
+          transform: translateY(-2px);
+        }
+
+        .loading-message {
+          text-align: center;
+          color: var(--text-light);
+        }
+
+        .message {
+          padding: 15px;
+          border-radius: 12px;
+          font-weight: 500;
+        }
+
+        .message.success {
+          background: rgba(0, 200, 83, 0.1);
+          color: var(--success);
+        }
+
+        .message.error {
+          background: rgba(244, 67, 54, 0.1);
+          color: var(--danger);
+        }
+
+        .add-item-btn {
+          width: 100%;
+          margin-top: 10px;
+          padding: 10px 15px;
+          background: var(--primary);
+          color: white;
+          border: none;
+          border-radius: 8px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: var(--transition);
+        }
+
+        .add-item-btn:hover {
+          background: var(--secondary);
+          transform: translateY(-1px);
+        }
+
+        .mode-selector {
+          display: flex;
+          background: rgba(0, 0, 0, 0.05);
+          padding: 4px;
+          border-radius: 12px;
+        }
+
+        .mode-btn {
+          flex: 1;
+          padding: 12px 16px;
+          border: none;
+          border-radius: 8px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: var(--transition);
+          background: transparent;
+          color: var(--text-light);
+        }
+
+        .mode-btn.active {
+          background: white;
+          color: var(--primary);
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .scan-result {
+          padding: 20px;
+          border: 1px solid rgba(0, 0, 0, 0.1);
+          border-radius: 15px;
+          background: white;
+          space-y: 15px;
+        }
+
+        .scan-sku {
+          font-weight: 600;
+          text-align: center;
+          color: var(--dark);
+        }
+
+        .sku-value {
+          font-family: monospace;
+          color: var(--primary);
+        }
+
+        .quantity-control {
+          display: flex;
+          align-items: center;
+          gap: 15px;
+        }
+
+        .quantity-label {
+          font-weight: 500;
+          color: var(--dark);
+          min-width: 80px;
+        }
+
+        .quantity-input {
+          flex: 1;
+          padding: 10px 15px;
+          border: 1px solid rgba(0, 0, 0, 0.1);
+          border-radius: 8px;
+          background: white;
+          font-size: 1rem;
+        }
+
+        .result-actions {
+          display: flex;
+          gap: 15px;
+        }
+
+        .action-btn {
+          flex: 1;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
+          padding: 12px 20px;
+          border: none;
+          border-radius: 10px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: var(--transition);
+        }
+
+        .action-btn.primary {
+          background: linear-gradient(135deg, var(--success) 0%, #00E676 100%);
+          color: white;
+        }
+
+        .action-btn.secondary {
+          background: rgba(0, 0, 0, 0.1);
+          color: var(--text);
+        }
+
+        .action-btn:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .icon {
+          width: 18px;
+          height: 18px;
+        }
+
+        @media (max-width: 480px) {
+          .scanner-container {
+            padding: 20px 15px;
+            margin: 0 10px;
+          }
+          
+          .scanner-view {
+            height: 250px;
+          }
+          
+          .result-actions {
+            flex-direction: column;
+          }
+          
+          .quantity-control {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 8px;
+          }
+        }
+      `}</style>
     </div>
   );
 };

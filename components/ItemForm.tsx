@@ -54,7 +54,7 @@ const ItemForm: React.FC<ItemFormProps> = ({ itemToEdit, locations, scannedSku, 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!item.name || !item.sku || !item.category || !item.locationId) {
-        alert("Please fill in all required fields.");
+        alert("Por favor, rellene todos los campos obligatorios.");
         return;
     }
     const dataToSave = itemToEdit ? { ...item, id: itemToEdit.id } : item;
@@ -77,7 +77,7 @@ const ItemForm: React.FC<ItemFormProps> = ({ itemToEdit, locations, scannedSku, 
       setQrCode(qrDataUrl);
     } catch (error) {
       console.error('Error generating QR code:', error);
-      alert('Failed to generate QR code');
+      alert('No se pudo generar el código QR');
     }
   };
 
@@ -112,18 +112,18 @@ const ItemForm: React.FC<ItemFormProps> = ({ itemToEdit, locations, scannedSku, 
 
   return (
     <div className="form-container">
-      <h1 className="form-title">{itemToEdit ? 'Edit Item' : 'Add New Item'}</h1>
+      <h1 className="form-title">{itemToEdit ? 'Editar artículo': 'Agregar nuevo artículo'}</h1>
       <form onSubmit={handleSubmit} className="form">
         <div className="form-grid">
           {/* Item Name */}
           <div className="form-field">
-            <label htmlFor="name" className="form-label">Item Name</label>
+            <label htmlFor="name" className="form-label">Nombre del artículo</label>
             <input type="text" id="name" name="name" value={item.name} onChange={handleChange} required className="form-input" />
           </div>
 
           {/* SKU */}
           <div className="form-field">
-            <label htmlFor="sku" className="form-label">SKU (Stock Keeping Unit)</label>
+            <label htmlFor="sku" className="form-label">SKU (Unidad de mantenimiento de existencias)</label>
             <div className="input-with-button">
               <input type="text" id="sku" name="sku" value={item.sku} onChange={handleChange} required disabled={fromScanner} className="form-input disabled" />
             </div>
@@ -131,9 +131,9 @@ const ItemForm: React.FC<ItemFormProps> = ({ itemToEdit, locations, scannedSku, 
 
           {/* Category */}
           <div className="form-field">
-            <label htmlFor="category" className="form-label">Category</label>
+            <label htmlFor="category" className="form-label">Categoría</label>
             <select id="category" name="category" value={item.category} onChange={handleChange} required className="form-select">
-              <option value="" disabled>Select a category</option>
+              <option value="" disabled>Seleccione una categoría</option>
               {categories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
             </select>
           </div>
@@ -142,33 +142,33 @@ const ItemForm: React.FC<ItemFormProps> = ({ itemToEdit, locations, scannedSku, 
           <div className="form-field">
             <label htmlFor="locationId" className="form-label">Location</label>
             <select id="locationId" name="locationId" value={item.locationId} onChange={handleChange} required className="form-select">
-              <option value="" disabled>Select a location</option>
+              <option value="" disabled>Seleccione una ubicación</option>
               {locations.map(loc => <option key={loc.id} value={loc.id}>{loc.name}</option>)}
             </select>
           </div>
 
           {/* Quantity */}
           <div className="form-field">
-            <label htmlFor="quantity" className="form-label">Initial Quantity</label>
+            <label htmlFor="quantity" className="form-label">Cantidad inicial</label>
             <input type="number" id="quantity" name="quantity" value={item.quantity} onChange={handleChange} required className="form-input" />
           </div>
 
           {/* Minimum Stock Level */}
           <div className="form-field">
-            <label htmlFor="minStock" className="form-label">Minimum Stock Level</label>
+            <label htmlFor="minStock" className="form-label">Nivel mínimo de existencias</label>
             <input type="number" id="minStock" name="minStock" value={item.minStock} onChange={handleChange} required className="form-input" />
           </div>
         </div>
 
         {/* Description */}
         <div className="form-field">
-          <label htmlFor="description" className="form-label">Description</label>
+          <label htmlFor="description" className="form-label">Descripción</label>
           <textarea id="description" name="description" value={item.description} onChange={handleChange} rows={3} className="form-textarea"></textarea>
         </div>
 
         {/* Image URL */}
         <div className="form-field">
-          <label htmlFor="imageUrl" className="form-label">Image URL</label>
+          <label htmlFor="imageUrl" className="form-label">URL de la imagen</label>
           <input type="text" id="imageUrl" name="imageUrl" value={item.imageUrl} onChange={handleChange} className="form-input" />
         </div>
 
@@ -180,7 +180,7 @@ const ItemForm: React.FC<ItemFormProps> = ({ itemToEdit, locations, scannedSku, 
               onClick={() => setShowQRGenerator(!showQRGenerator)}
               className="qr-toggle-btn"
             >
-              {showQRGenerator ? 'Hide' : 'Generate'} QR Code
+              {showQRGenerator ? 'Esconder' : 'Generar'} Código QR
             </button>
             
             {showQRGenerator && qrCode && (
@@ -197,14 +197,14 @@ const ItemForm: React.FC<ItemFormProps> = ({ itemToEdit, locations, scannedSku, 
                     onClick={downloadQRCode}
                     className="qr-action-btn download"
                   >
-                    Download
+                    Descargar
                   </button>
                   <button 
                     type="button"
                     onClick={printQRCode}
                     className="qr-action-btn print"
                   >
-                    Print
+                    Imprimir
                   </button>
                 </div>
               </div>
@@ -214,10 +214,10 @@ const ItemForm: React.FC<ItemFormProps> = ({ itemToEdit, locations, scannedSku, 
 
         <div className="form-actions">
           <button type="button" onClick={onCancel} className="btn-secondary">
-            Cancel
+            Cancelar
           </button>
           <button type="submit" className="btn-primary">
-            Save Item
+            Guardar artículo
           </button>
         </div>
       </form>
