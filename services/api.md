@@ -1,7 +1,7 @@
 import { Item, Location, Transaction, User } from '../types';
 
-// URL fija del backend externo (HTTP)
-const API_BASE_URL = 'http://dash.pogoos.xyz/api';
+// Usar ruta relativa que será redirigida por Vercel
+const API_BASE_URL = '/api';
 
 class ApiService {
   private async request(endpoint: string, options: RequestInit = {}) {
@@ -45,7 +45,7 @@ class ApiService {
     } catch (error) {
       console.error('🚨 Network error:', error);
       if (error.message.includes('Failed to fetch')) {
-        throw new Error('No se puede conectar al servidor. Por favor, verifica tu conexión a internet.');
+        throw new Error('Cannot connect to server. Please check your internet connection.');
       }
       throw error;
     }
@@ -119,19 +119,6 @@ class ApiService {
     return this.request('/locations', {
       method: 'POST',
       body: JSON.stringify(location),
-    });
-  }
-
-  async updateLocation(id: string, location: Partial<Location>): Promise<Location> {
-    return this.request(`/locations/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(location),
-    });
-  }
-
-  async deleteLocation(id: string): Promise<void> {
-    return this.request(`/locations/${id}`, {
-      method: 'DELETE',
     });
   }
 

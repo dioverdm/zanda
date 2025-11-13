@@ -33,37 +33,25 @@ const App: React.FC = () => {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        setLoading(true);
         const { authenticated } = await apiService.checkAuth();
-        console.log('🔐 Auth check result:', authenticated);
-        
         if (authenticated) {
           const user = await apiService.getProfile();
           setCurrentUser(user);
           await loadUserData();
         } else {
-          // Solo redirigir si no estamos ya en login
-          if (location.pathname !== '/login' && location.pathname !== '/register') {
-            navigate('/login');
-          }
+          navigate('/login');
         }
       } catch (error) {
         console.error('Auth check failed:', error);
-        // En caso de error, redirigir al login
-        if (location.pathname !== '/login' && location.pathname !== '/register') {
-          navigate('/login');
-        }
-      } finally {
-        setLoading(false);
+        navigate('/login');
       }
+      setLoading(false);
     };
-    
     checkAuth();
-  }, [navigate, location.pathname]);
+  }, [navigate]);
 
   const loadUserData = async () => {
     try {
-      setLoading(true);
       const [itemsData, locationsData, transactionsData] = await Promise.all([
         apiService.getItems(),
         apiService.getLocations(),
@@ -78,9 +66,6 @@ const App: React.FC = () => {
       setCategories(uniqueCategories);
     } catch (error) {
       console.error('Failed to load user data:', error);
-      alert('Error al cargar los datos. Por favor, recarga la página.');
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -119,35 +104,30 @@ const App: React.FC = () => {
   const handleLogin = async (email: string, password: string) => {
     try {
       const response = await apiService.login(email, password);
-      console.log('✅ Login successful:', response.user);
       setCurrentUser(response.user);
       await loadUserData();
       navigate('/');
     } catch (error: any) {
-      console.error('❌ Login failed:', error);
-      throw new Error(error.message || 'Error al iniciar sesión');
+      throw error;
     }
   };
 
   const handleRegister = async (userData: { email: string; password: string; name: string }) => {
     try {
       const response = await apiService.register(userData);
-      console.log('✅ Register successful:', response.user);
       setCurrentUser(response.user);
       await loadUserData();
       navigate('/');
     } catch (error: any) {
-      console.error('❌ Register failed:', error);
-      throw new Error(error.message || 'Error en el registro');
+      throw error;
     }
   };
 
   const handleLogout = async () => {
     try {
       await apiService.logout();
-      console.log('✅ Logout successful');
     } catch (error) {
-      console.error('❌ Logout error:', error);
+      console.error('Logout error:', error);
     } finally {
       setCurrentUser(null);
       setItems([]);
@@ -230,7 +210,7 @@ const App: React.FC = () => {
         itemId: itemToUpdate.id,
         type,
         quantityChange,
-        notes: notes || `Actualización de stock via escáner - ${type}`,
+        notes,
         timestamp: new Date().toISOString(),
       });
       
@@ -238,7 +218,6 @@ const App: React.FC = () => {
       return true;
     } catch (error) {
       console.error('Error al actualizar el stock:', error);
-      alert('Error al actualizar el stock. Por favor, intenta nuevamente.');
       return false;
     }
   }, [items]);
@@ -255,16 +234,18 @@ const App: React.FC = () => {
     );
   }
 
-  if (!currentUser && currentPage !== Page.LOGIN && currentPage !== Page.REGISTER) {
+  if (!currentUser && currentPage !== Page.LOGIN) {
     return <Login onLogin={handleLogin} onNavigateToRegister={() => navigate('/register')} />;
   }
 
   const renderContent = () => {
     switch (currentPage) {
-      case Page.LOGIN:
-        return <Login onLogin={handleLogin} onNavigateToRegister={() => navigate('/register')} />;
-      case Page.REGISTER:
-        return <Register onRegister={handleRegister} onNavigateToLogin={() => navigate('/login')} />;
+      // En el renderContent del App.tsx, para la página LOGIN:
+case Page.LOGIN:
+  return <Login 
+    onLogin={handleLogin} 
+    onNavigateToRegister={() => navigate('/register')} 
+  />;
       case Page.DASHBOARD:
         return <Dashboard items={items} transactions={transactions} onNavigate={navigateTo} />;
       case Page.INVENTORY:
