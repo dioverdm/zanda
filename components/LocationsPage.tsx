@@ -104,35 +104,35 @@ const LocationsPage: React.FC<LocationsPageProps> = ({
 
   // CORREGIDO: Ahora sí guarda en la base de datos
   const handleAddCategory = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newCategory.trim()) {
-      setError('El nombre de la categoría es requerido');
-      return;
-    }
-
-    if (categories.includes(newCategory.trim())) {
-      setError('La categoría ya existe');
-      return;
-    }
-
-    try {
-      setError('');
-      setSuccess('');
-      
-      // Para agregar categoría, necesitamos crear un item temporal o usar otro método
-      // Por ahora, actualizamos el estado local y recargamos
-      const updatedCategories = [...categories, newCategory.trim()];
-      setCategories(updatedCategories);
-      setNewCategory('');
-      setSuccess('Categoría agregada exitosamente');
-      
-      // Recargar categorías desde el backend para asegurar consistencia
-      setTimeout(() => loadCategories(), 500);
-      
-    } catch (error: any) {
-      setError(error.message || 'Error al agregar la categoría');
-    }
-  };
+  e.preventDefault();
+  if (!newCategory.trim()) {
+    setError('El nombre de la categoría es requerido');
+    return;
+  }
+  
+  if (categories.includes(newCategory.trim())) {
+    setError('La categoría ya existe');
+    return;
+  }
+  
+  try {
+    setError('');
+    setSuccess('');
+    
+    // Para agregar categoría, necesitamos crear un item temporal
+    // o usar otro método. Por ahora, actualizamos el estado local
+    const updatedCategories = [...categories, newCategory.trim()];
+    setCategories(updatedCategories);
+    setNewCategory('');
+    setSuccess('Categoría agregada exitosamente');
+    
+    // Recargar categorías desde el backend para asegurar consistencia
+    setTimeout(() => loadCategories(), 500);
+    
+  } catch (error: any) {
+    setError(error.message || 'Error al agregar la categoría');
+  }
+};
 
   const handleDeleteCategory = async (category: string) => {
     if (!window.confirm(`¿Estás seguro de que quieres eliminar la categoría "${category}"?`)) return;
