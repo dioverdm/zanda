@@ -106,6 +106,33 @@ const LocationsPage: React.FC<LocationsPageProps> = ({
   const handleAddCategory = async (e: React.FormEvent) => {
   e.preventDefault();
   if (!newCategory.trim()) {
+    setError('El nombre de la ubicación es requerido');
+    return;
+  }
+  if (categories.includes(newCategory.trim())) {
+  setError('La categoría ya existe');
+  return;
+  }
+  
+  setLoading(true);
+  setError('');
+  setSuccess('');
+  
+  try {
+    const updatedCategories = [...categories, newCategory.trim()];
+    setCategories(updatedCategories);
+    setNewCategory('');
+    setSuccess('Categoría agregada exitosamente');
+  } catch (error: any) {
+    console.error('Error adding location:', error);
+    setError(error.message || 'Error al agregar la ubicación');
+  } finally {
+    setLoading(false);
+  }
+};
+  /*const handleAddCategory = async (e: React.FormEvent) => {
+  e.preventDefault();
+  if (!newCategory.trim()) {
     setError('El nombre de la categoría es requerido');
     return;
   }
@@ -132,7 +159,7 @@ const LocationsPage: React.FC<LocationsPageProps> = ({
   } catch (error: any) {
     setError(error.message || 'Error al agregar la categoría');
   }
-};
+};*/
 
   const handleDeleteCategory = async (category: string) => {
     if (!window.confirm(`¿Estás seguro de que quieres eliminar la categoría "${category}"?`)) return;
