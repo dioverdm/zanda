@@ -191,6 +191,14 @@ async deleteCategory(categoryName: string): Promise < void > {
   });
 }
 
+// Agregar en la clase ApiService, después de deleteCategory
+async createCategory(categoryName: string): Promise < { message: string;category: string } > {
+  return this.request('/categories', {
+    method: 'POST',
+    body: JSON.stringify({ categoryName }),
+  });
+}
+
 // Items transactions
 async getItemTransactions(itemId: string): Promise < Transaction[] > {
   return this.request(`/items/${itemId}/transactions`);
